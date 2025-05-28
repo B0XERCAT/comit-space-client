@@ -70,7 +70,7 @@ export default async function MyStudy() {
                     <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
                       <span className=" text-[#3e4042]">{study.level}</span>
                     </button>
-                    {study.stacks.map((stack, index) => (
+                    {study.tags.map((stack, index) => (
                       <button
                         key={index}
                         className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]"

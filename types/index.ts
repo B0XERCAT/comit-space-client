@@ -32,7 +32,7 @@ export type Study = {
   level: Level
   mentor: User
   semester: string
-  stacks: string[]
+  tags: string[]
   startTime: string
   title: string
 }

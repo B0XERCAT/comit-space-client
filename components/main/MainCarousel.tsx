@@ -8,7 +8,7 @@ import { Carousel, CarouselContent, CarouselItem } from '../ui/carousel'
 
 export const MainCarousel = () => {
   const plugin = useRef(AutoScroll({ playOnInit: true }))
-  const dummyStackUrl: string[] = [
+  const dummyTagUrl: string[] = [
     'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',
     'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg',
     'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',
@@ -42,7 +42,7 @@ export const MainCarousel = () => {
         plugins={[plugin.current]}
       >
         <CarouselContent>
-          {dummyStackUrl.map((item, index) => {
+          {dummyTagUrl.map((item, index) => {
             return (
               <CarouselItem key={index} className="basis-1/8 flex items-center">
                 <div className="h-28 w-28 sm:h-32 sm:w-32">

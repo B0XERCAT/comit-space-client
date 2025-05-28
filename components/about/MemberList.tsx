@@ -8,9 +8,7 @@ import { CustomResponse } from '@/lib/response'
 import { UserProfile } from '@/types'
 
 const MemberList = async (): Promise<React.JSX.Element> => {
-  const res = await fetchData(API_ENDPOINTS.CLIENT.STAFF_LIST as ApiEndpoint, {
-    next: { revalidate: 60 }
-  })
+  const res = await fetchData(API_ENDPOINTS.CLIENT.STAFF_LIST as ApiEndpoint)
   if (!res.ok) {
     switch (res.status) {
       default:

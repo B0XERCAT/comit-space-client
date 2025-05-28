@@ -60,7 +60,7 @@ const schema = z.object({
   level: z.enum(['초급', '중급', '고급'], {
     required_error: '난이도를 선택해주세요'
   }),
-  stacks: z.array(z.string()).min(1, { message: '스택을 입력해주세요' }),
+  tags: z.array(z.string()).min(1, { message: '스택을 입력해주세요' }),
   description: z
     .string()
     .min(1, { message: '설명을 입력해주세요' })
@@ -100,7 +100,7 @@ export default function OpenStudy() {
   } = useForm<StudyForm>({
     resolver: zodResolver(schema),
     defaultValues: {
-      stacks: []
+      tags: []
     }
   })
   const fileHandler = useSupabaseFile({ pathPrefix: 'image/study' })
@@ -116,7 +116,8 @@ export default function OpenStudy() {
         ...data,
         imageSrc: fileUrl,
         isRecruiting: true,
-        semester: 1 // TODO: 학기 정보 추가, 하드코딩하지마라!!!
+        semester: 'Spring',
+        year: 2025
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -154,38 +155,38 @@ export default function OpenStudy() {
   const handleClick = () => {
     fileRef?.current?.click()
   }
-  // Stack
-  const watchedStacks: string[] = watch('stacks')
-  const [stackError, setStackError] = useState<string>('')
-  const [currentStack, setCurrentStack] = useState<string>('')
+  // Tag
+  const watchedTags: string[] = watch('tags')
+  const [stackError, setTagError] = useState<string>('')
+  const [currentTag, setCurrentTag] = useState<string>('')
 
-  const handleStackChange = (e: { target: { value: SetStateAction<string> } }) => {
-    setCurrentStack(e.target.value)
+  const handleTagChange = (e: { target: { value: SetStateAction<string> } }) => {
+    setCurrentTag(e.target.value)
   }
-  const handleStackAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const newStack = e.currentTarget.value.trim()
+  const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const newTag = e.currentTarget.value.trim()
 
-    if (watchedStacks.length === 4) {
-      newStack !== '' ? setStackError('스택은 최대 4개까지만 입력 가능합니다') : setStackError('')
+    if (watchedTags.length === 4) {
+      newTag !== '' ? setTagError('스택은 최대 4개까지만 입력 가능합니다') : setTagError('')
     }
 
-    if (e.key === 'Enter' && newStack !== '') {
-      watchedStacks.length !== 4 ? handleDuplicateStack() : setCurrentStack('')
+    if (e.key === 'Enter' && newTag !== '') {
+      watchedTags.length !== 4 ? handleDuplicateTag() : setCurrentTag('')
     }
   }
-  const handleDuplicateStack = () => {
-    const newStack = getValues('stacks').concat(currentStack)
+  const handleDuplicateTag = () => {
+    const newTag = getValues('tags').concat(currentTag)
 
-    if (new Set(newStack).size === getValues('stacks').length) {
-      setError('stacks', {
+    if (new Set(newTag).size === getValues('tags').length) {
+      setError('tags', {
         type: 'Duplicate',
         message: '중복 스택이 존재합니다'
       })
     } else {
-      clearErrors('stacks')
-      setValue('stacks', getValues('stacks') ? newStack : [currentStack])
+      clearErrors('tags')
+      setValue('tags', getValues('tags') ? newTag : [currentTag])
     }
-    setCurrentStack('')
+    setCurrentTag('')
   }
 
   // Time
@@ -347,17 +348,17 @@ export default function OpenStudy() {
               <div className="relative">
                 <Input
                   placeholder="주제를 입력해주세요"
-                  id="stacks"
-                  value={currentStack}
-                  onChange={handleStackChange}
-                  onKeyUp={handleStackAdd}
+                  id="tags"
+                  value={currentTag}
+                  onChange={handleTagChange}
+                  onKeyUp={handleTagAdd}
                   className="w-60"
                 />
                 <Button
                   type="button"
                   className="absolute right-2 top-1/2 z-10 h-4 w-4 -translate-y-1/2 p-3 text-xl"
-                  disabled={currentStack.trim() === '' || (watchedStacks && watchedStacks.length >= 4)}
-                  onClick={handleDuplicateStack}
+                  disabled={currentTag.trim() === '' || (watchedTags && watchedTags.length >= 4)}
+                  onClick={handleDuplicateTag}
                 >
                   +
                 </Button>
@@ -367,20 +368,20 @@ export default function OpenStudy() {
                 className="p-3"
                 type="button"
                 onClick={() => {
-                  setStackError('')
-                  clearErrors('stacks')
-                  setValue('stacks', [])
+                  setTagError('')
+                  clearErrors('tags')
+                  setValue('tags', [])
                 }}
               >
                 Reset
               </Button>
             </div>
-            {errors.stacks && <p className="-mt-2 text-sm text-red-500">{errors.stacks.message}</p>}
+            {errors.tags && <p className="-mt-2 text-sm text-red-500">{errors.tags.message}</p>}
             <div className="flex gap-4">
-              {watchedStacks &&
-                watchedStacks.map((stacks, index) => (
+              {watchedTags &&
+                watchedTags.map((tags, index) => (
                   <Badge variant="secondary" key={index}>
-                    {stacks}
+                    {tags}
                   </Badge>
                 ))}
             </div>
@@ -408,7 +409,7 @@ export default function OpenStudy() {
                 className="px-8 font-extrabold"
                 onClick={() => {
                   trigger()
-                  isValid && setStackError('')
+                  isValid && setTagError('')
                 }}
               >
                 제출하기
@@ -448,7 +449,7 @@ export default function OpenStudy() {
                       username: ''
                     },
                     semester: '1',
-                    stacks: getValues('stacks') || [],
+                    tags: getValues('tags') || [],
                     startTime: getValues('startTime') || '00:00',
                     title: getValues('title') || ''
                   }}

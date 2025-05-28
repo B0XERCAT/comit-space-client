@@ -152,7 +152,7 @@ const StudySignupForm = ({ study }: StudySignupFormProps) => {
                 <div className="overflow-auto">
                   <div className="flex justify-start gap-x-2">
                     <RiStackOverflowLine />
-                    {study.stacks.map((s) => (
+                    {study.tags.map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs">
                         {s}
                       </Badge>

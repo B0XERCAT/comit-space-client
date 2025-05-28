@@ -8,9 +8,7 @@ import { CustomResponse } from '@/lib/response'
 import { Study } from '@/types'
 
 export const ExampleStudyList = async (): Promise<React.JSX.Element> => {
-  const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.LIST as ApiEndpoint, {
-    next: { revalidate: 1800 }
-  })
+  const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.LIST as ApiEndpoint)
   if (!res.ok) {
     switch (res.status) {
       default:
@@ -19,7 +17,7 @@ export const ExampleStudyList = async (): Promise<React.JSX.Element> => {
   }
   const json: CustomResponse = await res.json()
   const studyList: Study[] = json.data
-  const exampleStudies = studyList ? studyList.slice(7).slice(0, 4) : []
+  const exampleStudies = studyList
 
   return (
     <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-12 xl:mb-32 xl:grid-cols-4">

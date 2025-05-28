@@ -252,10 +252,10 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
               <span className="flex font-semibold">관련 스택:</span>
               <EasyEdit
                 type={Types.TEXT}
-                value={study.stacks.join(', ')}
+                value={study.tags.join(', ')}
                 onSave={(val) => {
-                  const stacks = val.split(',').map((stack: string) => stack.trim())
-                  handleSave(id, 'stacks', stacks)
+                  const tags = val.split(',').map((stack: string) => stack.trim())
+                  handleSave(id, 'tags', tags)
                 }}
                 saveButtonLabel={
                   <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">

@@ -92,7 +92,7 @@ export const columns: ColumnDef<Study>[] = [
   {
     accessorKey: 'stack',
     header: ({ column }) => <DataTableColumnHeader column={column} title="스택" />,
-    cell: ({ row }) => row.original.stacks
+    cell: ({ row }) => row.original.tags
   },
   {
     accessorKey: 'day',

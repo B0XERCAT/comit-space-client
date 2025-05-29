@@ -31,6 +31,12 @@ export const ROUTES = {
       url: `/study/${id}/signup`
     })
   },
+  EVENT: {
+    index: {
+      name: '행사',
+      url: '/event'
+    }
+  },
   CLUBROOM: {
     name: '동아리방',
     url: '/clubroom'

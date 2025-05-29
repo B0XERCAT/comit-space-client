@@ -36,3 +36,17 @@ export type Study = {
   startTime: string
   title: string
 }
+
+export interface Event {
+  id: number
+  title: string
+  imageSrc: string
+  startTime: string
+  endTime: string
+  location: string
+  tags: string[]
+  description: string
+  isRecruiting: boolean
+  semester: string
+  year: number
+}

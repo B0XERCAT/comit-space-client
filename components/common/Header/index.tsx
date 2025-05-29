@@ -33,11 +33,12 @@ const DrawerItem = ({ route, icon }: { route: Route; icon: React.ReactNode }) =>
 }
 
 // Constants
-const NAVLINK_ROUTES = [ROUTES.ABOUT, ROUTES.STUDY.index, ROUTES.CLUBROOM]
+const NAVLINK_ROUTES = [ROUTES.ABOUT, ROUTES.STUDY.index, ROUTES.EVENT.index, ROUTES.CLUBROOM]
 const DEFAULT_DRAWER_ITEMS = [
   { route: ROUTES.HOME, icon: <IoHomeOutline size={27} /> },
   { route: ROUTES.ABOUT, icon: <IoMdInformationCircleOutline size={27} /> },
   { route: ROUTES.STUDY.index, icon: <IoLaptopOutline size={27} /> },
+  { route: ROUTES.EVENT.index, icon: <IoMdInformationCircleOutline size={27} /> },
   { route: ROUTES.CLUBROOM, icon: <BsDoorOpen size={27} /> }
 ]
 const LOGGED_OUT_DRAWER_ITEMS = [

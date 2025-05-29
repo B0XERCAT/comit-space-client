@@ -9,7 +9,7 @@ import { GiHamburgerMenu } from 'react-icons/gi'
 import { HiOutlineUserCircle } from 'react-icons/hi2'
 import { IoMdInformationCircleOutline } from 'react-icons/io'
 import { IoHomeOutline, IoLaptopOutline } from 'react-icons/io5'
-import { MdLogin, MdLogout } from 'react-icons/md'
+import { MdLogin, MdLogout, MdOutlineArticle } from 'react-icons/md'
 import { PiBooksLight } from 'react-icons/pi'
 
 import Profile from '@/components/common/Header/Profile'
@@ -33,12 +33,13 @@ const DrawerItem = ({ route, icon }: { route: Route; icon: React.ReactNode }) =>
 }
 
 // Constants
-const NAVLINK_ROUTES = [ROUTES.ABOUT, ROUTES.STUDY.index, ROUTES.EVENT.index, ROUTES.CLUBROOM]
+const NAVLINK_ROUTES = [ROUTES.ABOUT, ROUTES.STUDY.index, ROUTES.EVENT.index, ROUTES.POST.index, ROUTES.CLUBROOM]
 const DEFAULT_DRAWER_ITEMS = [
   { route: ROUTES.HOME, icon: <IoHomeOutline size={27} /> },
   { route: ROUTES.ABOUT, icon: <IoMdInformationCircleOutline size={27} /> },
   { route: ROUTES.STUDY.index, icon: <IoLaptopOutline size={27} /> },
   { route: ROUTES.EVENT.index, icon: <IoMdInformationCircleOutline size={27} /> },
+  { route: ROUTES.POST.index, icon: <MdOutlineArticle size={27} /> },
   { route: ROUTES.CLUBROOM, icon: <BsDoorOpen size={27} /> }
 ]
 const LOGGED_OUT_DRAWER_ITEMS = [

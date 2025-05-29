@@ -37,6 +37,12 @@ export const ROUTES = {
       url: '/event'
     }
   },
+  POST: {
+    index: {
+      name: '게시판',
+      url: '/post'
+    }
+  },
   CLUBROOM: {
     name: '동아리방',
     url: '/clubroom'

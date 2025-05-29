@@ -50,3 +50,16 @@ export interface Event {
   semester: string
   year: number
 }
+
+export type ReservationStatus = 'WAIT' | 'APPROVED' | 'REJECTED'
+
+export interface Reservation {
+  id: number
+  studyId: number
+  startTime: string
+  endTime: string
+  reserver: User
+  title: string
+  description: string
+  isVerified: ReservationStatus
+}

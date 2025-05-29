@@ -50,6 +50,13 @@ const JSP_ENDPOINTS = {
     EVENT: {
       LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod }
     },
+    RESERVATION: {
+      LIST: (year: number, month: number) => ({
+        url: `${baseURL}/${API_PREFIX}/reservations?year=${year}&month=${month}`,
+        method: 'GET' as HttpMethod
+      }),
+      CREATE: { url: `${baseURL}/${API_PREFIX}/reservations`, method: 'POST' as HttpMethod }
+    },
     STAFF_LIST: { url: `${baseURL}/${API_PREFIX}/staffs`, method: 'GET' as HttpMethod },
     PROFILE: {
       RETRIEVE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'GET' as HttpMethod },

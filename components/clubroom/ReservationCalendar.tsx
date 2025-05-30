@@ -24,6 +24,8 @@ import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
 import { Reservation } from '@/types'
 
+import { toast } from '../ui/use-toast'
+
 export default function ReservationCalendar() {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -66,16 +68,21 @@ export default function ReservationCalendar() {
       description
     }
 
-    const res = await fetch(API_ENDPOINTS.CLIENT.RESERVATION.CREATE.url, {
+    const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.CREATE as ApiEndpoint, {
       method: 'POST',
+      body: JSON.stringify(reservationData),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.data?.accessToken}`
       },
-      body: JSON.stringify(reservationData)
+      credentials: 'include'
     })
 
     if (!res.ok) {
-      alert('예약 생성에 실패했습니다.')
+      toast({
+        title: '예약에 실패했습니다.',
+        variant: 'destructive'
+      })
       return
     }
 
@@ -84,6 +91,10 @@ export default function ReservationCalendar() {
     setIsDialogOpen(false)
     setTitle('')
     setDescription('')
+    toast({
+      title: '예약에 성공했습니다.',
+      variant: 'default'
+    })
   }
 
   useEffect(() => {
@@ -99,6 +110,12 @@ export default function ReservationCalendar() {
       reservation.isVerified === 'APPROVED' ? '#22c55e' : reservation.isVerified === 'REJECTED' ? '#ef4444' : '#f59e0b'
   }))
 
+  const handleDatesSet = (arg: { start: Date; end: Date }) => {
+    const year = arg.start.getFullYear()
+    const month = arg.start.getMonth() + 1
+    loadReservations(year, month)
+  }
+
   return (
     <div className="max-w-5xl">
       <FullCalendar
@@ -111,6 +128,7 @@ export default function ReservationCalendar() {
         }}
         events={events}
         dateClick={handleDateClick}
+        datesSet={handleDatesSet}
         height="auto"
         locale="ko"
       />
@@ -123,39 +141,39 @@ export default function ReservationCalendar() {
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-6 items-center gap-4">
               <Label className="text-right">시작 시간</Label>
               <Input
                 type="time"
                 value={selectedTime.start}
                 onChange={(e) => setSelectedTime({ ...selectedTime, start: e.target.value })}
-                className="col-span-3"
+                className="col-span-5"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-6 items-center gap-4">
               <Label className="text-right">종료 시간</Label>
               <Input
                 type="time"
                 value={selectedTime.end}
                 onChange={(e) => setSelectedTime({ ...selectedTime, end: e.target.value })}
-                className="col-span-3"
+                className="col-span-5"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-6 items-center gap-4">
               <Label className="text-right">제목</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="col-span-3"
+                className="col-span-5"
                 placeholder="예약 제목을 입력하세요"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-6 items-center gap-4">
               <Label className="text-right">설명</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="col-span-3"
+                className="col-span-5"
                 placeholder="예약 설명을 입력하세요"
               />
             </div>

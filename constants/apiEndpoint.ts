@@ -59,6 +59,10 @@ const JSP_ENDPOINTS = {
       MY: (year: number, month: number) => ({
         url: `${baseURL}/${API_PREFIX}/reservations/my?year=${year}&month=${month}`,
         method: 'GET' as HttpMethod
+      }),
+      DELETE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/reservations/${id}`,
+        method: 'DELETE' as HttpMethod
       })
     },
     STAFF_LIST: { url: `${baseURL}/${API_PREFIX}/staffs`, method: 'GET' as HttpMethod },

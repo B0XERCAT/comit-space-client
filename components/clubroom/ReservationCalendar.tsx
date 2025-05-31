@@ -131,6 +131,8 @@ export default function ReservationCalendar() {
         datesSet={handleDatesSet}
         height="auto"
         locale="ko"
+        slotMinTime="09:00:00"
+        slotMaxTime="23:00:00"
       />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

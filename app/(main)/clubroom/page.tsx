@@ -7,7 +7,7 @@ export default function Clubroom() {
     <>
       <SectionBanner title="Clubroom" description="CoMit의 동아리방을 소개합니다!" />
       <ClubroomMainContent />
-      <div className="flex w-full justify-center">
+      <div className="mb-16 mt-10 flex w-full justify-center">
         <ReservationCalendar />
       </div>
     </>

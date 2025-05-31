@@ -80,7 +80,7 @@ export default function ReservationCalendar() {
 
     if (!res.ok) {
       toast({
-        title: '해당 시간대는 예약이 완료되었습니다. 다른 시간을 선택해 주세요.',
+        title: '이미 예약된 시간입니다. 다른 시간을 선택해 주세요.',
         variant: 'destructive'
       })
       return
@@ -107,7 +107,7 @@ export default function ReservationCalendar() {
     start: reservation.startTime,
     end: reservation.endTime,
     backgroundColor:
-      reservation.isVerified === 'APPROVED' ? '#22c55e' : reservation.isVerified === 'REJECTED' ? '#ef4444' : '#f59e0b'
+      reservation.isVerified === 'ACCEPT' ? '#22c55e' : reservation.isVerified === 'DECLINE' ? '#ef4444' : '#f59e0b'
   }))
 
   const handleDatesSet = (arg: { start: Date; end: Date }) => {

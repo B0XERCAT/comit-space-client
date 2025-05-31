@@ -51,7 +51,7 @@ export interface Event {
   year: number
 }
 
-export type ReservationStatus = 'WAIT' | 'APPROVED' | 'REJECTED'
+export type ReservationStatus = 'WAIT' | 'ACCEPT' | 'DECLINE'
 
 export interface Reservation {
   id: number

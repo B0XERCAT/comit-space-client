@@ -1,5 +1,6 @@
 'use client'
 
+import { DatesSetArg } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
@@ -26,7 +27,11 @@ import { Reservation } from '@/types'
 
 import { toast } from '../ui/use-toast'
 
-export default function ReservationCalendar() {
+interface ReservationCalendarProps {
+  onMonthChange: (year: number, month: number) => void
+}
+
+export default function ReservationCalendar({ onMonthChange }: ReservationCalendarProps) {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedTime, setSelectedTime] = useState({ start: '09:00', end: '10:00' })
@@ -42,7 +47,7 @@ export default function ReservationCalendar() {
       return
     }
     const json: CustomResponse = await res.json()
-    setReservations(json.data)
+    setReservations(json.data.filter((reservation: Reservation) => reservation.isVerified !== 'DECLINE'))
   }
 
   const handleDateClick = (info: { dateStr: string }) => {
@@ -106,14 +111,14 @@ export default function ReservationCalendar() {
     title: `${reservation.title} (${reservation.reserver.username})`,
     start: reservation.startTime,
     end: reservation.endTime,
-    backgroundColor:
-      reservation.isVerified === 'ACCEPT' ? '#22c55e' : reservation.isVerified === 'DECLINE' ? '#ef4444' : '#f59e0b'
+    backgroundColor: reservation.isVerified === 'ACCEPT' ? '#22c55e' : '#f59e0b'
   }))
 
-  const handleDatesSet = (arg: { start: Date; end: Date }) => {
-    const year = arg.start.getFullYear()
-    const month = arg.start.getMonth() + 1
+  const handleDatesSet = (arg: DatesSetArg) => {
+    const year = arg.view.currentStart.getFullYear()
+    const month = arg.view.currentStart.getMonth() + 1
     loadReservations(year, month)
+    onMonthChange(year, month)
   }
 
   return (

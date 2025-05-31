@@ -55,7 +55,11 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/reservations?year=${year}&month=${month}`,
         method: 'GET' as HttpMethod
       }),
-      CREATE: { url: `${baseURL}/${API_PREFIX}/reservations`, method: 'POST' as HttpMethod }
+      CREATE: { url: `${baseURL}/${API_PREFIX}/reservations`, method: 'POST' as HttpMethod },
+      MY: (year: number, month: number) => ({
+        url: `${baseURL}/${API_PREFIX}/reservations/my?year=${year}&month=${month}`,
+        method: 'GET' as HttpMethod
+      })
     },
     STAFF_LIST: { url: `${baseURL}/${API_PREFIX}/staffs`, method: 'GET' as HttpMethod },
     PROFILE: {

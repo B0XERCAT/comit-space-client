@@ -80,7 +80,7 @@ export default function ReservationCalendar() {
 
     if (!res.ok) {
       toast({
-        title: '예약에 실패했습니다.',
+        title: '해당 시간대는 예약이 완료되었습니다. 다른 시간을 선택해 주세요.',
         variant: 'destructive'
       })
       return

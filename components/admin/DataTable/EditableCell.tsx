@@ -11,6 +11,7 @@ import { ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
 import { CustomResponseDTO } from '@/lib/response'
+import { cn } from '@/lib/utils'
 
 const roleOptions = [
   {
@@ -44,6 +45,36 @@ const EditableCell: React.FC<EditableCellProps> = ({ fieldName, row, readonly, s
   const [value, setValue] = useState<any>(initialValue ?? '')
   const [inputValue, setInputValue] = useState<any>(initialValue ?? '')
   const id = row.original.id
+
+  const formatDisplayValue = (val: any) => {
+    if (fieldName === 'role') {
+      const roleOption = roleOptions.find((role) => role.value === val)
+      return roleOption?.label || val
+    }
+    if (fieldName === 'isStaff') {
+      return val ? 'O' : 'X'
+    }
+    if (fieldName === 'isRecruiting') {
+      return val ? '모집중' : '모집마감'
+    }
+    return val.toString()
+  }
+
+  const getCellWidth = () => {
+    if (fieldName === 'isStaff') return 'w-12'
+    if (fieldName === 'role') return 'w-20'
+    if (fieldName === 'isRecruiting') return 'w-24'
+    if (fieldName === 'position') return 'w-32'
+    return 'w-40'
+  }
+
+  const getPopoverWidth = () => {
+    if (fieldName === 'isStaff') return 'w-32'
+    if (fieldName === 'role') return 'w-48'
+    if (fieldName === 'isRecruiting') return 'w-48'
+    if (fieldName === 'position') return 'w-56'
+    return 'w-64'
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -82,19 +113,42 @@ const EditableCell: React.FC<EditableCellProps> = ({ fieldName, row, readonly, s
 
   return (
     <Popover open={open} onOpenChange={() => setOpen(!readonly && true)}>
-      <PopoverTrigger className="m-1 h-full w-full rounded border hover:bg-slate-200">
-        <div className="max-w-[16rem] overflow-hidden whitespace-nowrap px-2 text-start">{value.toString()}</div>
+      <PopoverTrigger className={cn('m-1 h-full rounded border hover:bg-slate-200', getCellWidth())}>
+        <div className="overflow-hidden whitespace-nowrap px-2 text-center">{formatDisplayValue(value)}</div>
       </PopoverTrigger>
-      <PopoverContent className="p-2" onEscapeKeyDown={() => setOpen(false)}>
+      <PopoverContent className={cn('p-2', getPopoverWidth())} onEscapeKeyDown={() => setOpen(false)}>
         <form onSubmit={handleSubmit}>
           {typeof inputValue === 'boolean' ? (
-            <Input
-              type="checkbox"
-              checked={inputValue}
-              onChange={() => setInputValue((prev: any) => !prev)}
-              className={inputClass}
-              disabled={readonly}
-            />
+            <Tabs
+              value={inputValue ? 'true' : 'false'}
+              onValueChange={(e) => {
+                const newValue = e === 'true'
+                setInputValue(newValue)
+                setValue(newValue)
+              }}
+            >
+              <TabsList className="w-full">
+                {fieldName === 'isRecruiting' ? (
+                  <>
+                    <TabsTrigger value="true" className="flex-1">
+                      모집중
+                    </TabsTrigger>
+                    <TabsTrigger value="false" className="flex-1">
+                      모집마감
+                    </TabsTrigger>
+                  </>
+                ) : (
+                  <>
+                    <TabsTrigger value="true" className="flex-1">
+                      O
+                    </TabsTrigger>
+                    <TabsTrigger value="false" className="flex-1">
+                      X
+                    </TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+            </Tabs>
           ) : fieldName === 'role' ? (
             <Tabs
               value={value}

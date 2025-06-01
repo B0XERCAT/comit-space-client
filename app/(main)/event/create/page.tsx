@@ -77,11 +77,6 @@ export default function CreateEvent() {
   const [tagError, setTagError] = useState<string>('')
   const [currentTag, setCurrentTag] = useState<string>('')
 
-  // Authentication check
-  if (!session || session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-
   // Staff check
   useEffect(() => {
     const checkStaffStatus = async () => {
@@ -112,6 +107,15 @@ export default function CreateEvent() {
 
     checkStaffStatus()
   }, [session])
+
+  // Authentication check
+  if (session === null) {
+    return null // Wait for session to load
+  }
+
+  if (session.error) {
+    redirect(ROUTES.LOGIN.url)
+  }
 
   if (isLoading) {
     return null

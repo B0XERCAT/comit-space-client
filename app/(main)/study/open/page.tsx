@@ -75,16 +75,10 @@ const levelOptions: Level[] = ['초급', '중급', '고급']
 
 export default function OpenStudy() {
   const session = useSession()
-  if (!session) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  if (session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  const canOpenStudy = session.data.role ? ['ROLE_VERIFIED', 'ROLE_ADMIN'].includes(session.data.role) : false
-
   const router = useRouter()
   const { toast } = useToast()
+  const fileHandler = useSupabaseFile({ pathPrefix: 'image/study' })
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const {
     handleSubmit,
@@ -103,7 +97,30 @@ export default function OpenStudy() {
       tags: []
     }
   })
-  const fileHandler = useSupabaseFile({ pathPrefix: 'image/study' })
+
+  // State management
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [image, setImage] = useState<string>('')
+  const [stackError, setTagError] = useState<string>('')
+  const [currentTag, setCurrentTag] = useState<string>('')
+  const [startTime, setStartTime] = useState<TimeInput>(undefined)
+  const [endTime, setEndTime] = useState<TimeInput>(undefined)
+
+  // Authentication check
+  if (session === null) {
+    return null // Wait for session to load
+  }
+
+  if (session.error) {
+    redirect(ROUTES.LOGIN.url)
+  }
+
+  // Check if user can open study
+  const canOpenStudy = session.data.role ? ['ROLE_VERIFIED', 'ROLE_ADMIN'].includes(session.data.role) : false
+
+  if (!canOpenStudy) {
+    redirect(ROUTES.STUDY.index.url)
+  }
 
   const onSubmit = async (data: StudyForm) => {
     document.getElementById('closeDialog')?.click()
@@ -147,18 +164,8 @@ export default function OpenStudy() {
     }
   }
 
-  // Image
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [image, setImage] = useState<string>('')
-
-  const fileRef = useRef<HTMLInputElement>(null)
-  const handleClick = () => {
-    fileRef?.current?.click()
-  }
   // Tag
   const watchedTags: string[] = watch('tags')
-  const [stackError, setTagError] = useState<string>('')
-  const [currentTag, setCurrentTag] = useState<string>('')
 
   const handleTagChange = (e: { target: { value: SetStateAction<string> } }) => {
     setCurrentTag(e.target.value)
@@ -191,8 +198,6 @@ export default function OpenStudy() {
 
   // Time
   type TimeInput = Date | undefined
-  const [startTime, setStartTime] = useState<TimeInput>(undefined)
-  const [endTime, setEndTime] = useState<TimeInput>(undefined)
 
   const onChangeStartTime = (date: TimeInput) => {
     if (typeof date !== 'undefined') {
@@ -208,9 +213,6 @@ export default function OpenStudy() {
     }
   }
 
-  if (!canOpenStudy) {
-    redirect(ROUTES.STUDY.index.url)
-  }
   return (
     <div className="flex flex-col items-center">
       <SectionBanner title="Open Study" description="새로운 스터디 분반을 개설합니다!" />
@@ -221,7 +223,9 @@ export default function OpenStudy() {
             <Button
               type="button"
               variant="outline"
-              onClick={handleClick}
+              onClick={() => {
+                fileRef?.current?.click()
+              }}
               className="flex h-52 w-52 items-center justify-center overflow-hidden rounded-lg border border-slate-300"
             >
               {!image ? (

@@ -1,6 +1,5 @@
 'use client'
 
-import { redirect } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -9,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/use-toast'
 import { ApiEndpoint } from '@/constants/apiEndpoint'
-import { ROUTES } from '@/constants/routes'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
 import { CustomResponseDTO } from '@/lib/response'
@@ -40,18 +38,6 @@ interface EditableCellProps {
 
 const EditableCell: React.FC<EditableCellProps> = ({ fieldName, row, readonly, submitApiEndpoint }) => {
   const session = useSession()
-  if (!session) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  if (session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  const accessToken = session.data?.accessToken
-
-  if (!accessToken) {
-    redirect(ROUTES.LOGIN.url)
-  }
-
   const { toast } = useToast()
   const initialValue = row.original[fieldName]
   const [open, setOpen] = useState<boolean>(false)
@@ -60,9 +46,6 @@ const EditableCell: React.FC<EditableCellProps> = ({ fieldName, row, readonly, s
   const id = row.original.id
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    if (accessToken === undefined) {
-      redirect(ROUTES.LOGIN.url)
-    }
     e.preventDefault()
     setValue(inputValue)
     setOpen(false)
@@ -71,7 +54,7 @@ const EditableCell: React.FC<EditableCellProps> = ({ fieldName, row, readonly, s
       body: JSON.stringify({ [fieldName]: inputValue }),
       cache: 'no-cache',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${session?.data?.accessToken}`,
         'Content-Type': 'application/json'
       },
       credentials: 'include'

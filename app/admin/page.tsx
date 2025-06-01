@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
@@ -10,19 +9,9 @@ import { Study, User } from '@/types'
 
 const Admin = async () => {
   const session = await auth()
-  if (!session) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  if (session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  if (session.data?.role !== 'ROLE_ADMIN') {
-    redirect(ROUTES.HOME.url)
-  }
-
   const studyRes = await fetchData(API_ENDPOINTS.ADMIN.STUDY.LIST as ApiEndpoint, {
     headers: {
-      Authorization: `Bearer ${session.data?.accessToken}`
+      Authorization: `Bearer ${session?.data?.accessToken}`
     },
     credentials: 'include'
   })
@@ -37,7 +26,7 @@ const Admin = async () => {
 
   const userRes = await fetchData(API_ENDPOINTS.ADMIN.USER.LIST as ApiEndpoint, {
     headers: {
-      Authorization: `Bearer ${session.data?.accessToken}`
+      Authorization: `Bearer ${session?.data?.accessToken}`
     },
     credentials: 'include'
   })
@@ -127,5 +116,4 @@ const Admin = async () => {
     </div>
   )
 }
-
 export default Admin

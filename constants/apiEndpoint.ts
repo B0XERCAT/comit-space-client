@@ -48,7 +48,10 @@ const JSP_ENDPOINTS = {
       UPDATE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/studies/${id}`, method: 'PATCH' as HttpMethod })
     },
     POST: {
-      LIST: { url: `${baseURL}/${API_PREFIX}/posts`, method: 'GET' as HttpMethod },
+      LIST: (groupType: 'STUDY' | 'EVENT') => ({
+        url: `${baseURL}/${API_PREFIX}/posts?groupType=${groupType}`,
+        method: 'GET' as HttpMethod
+      }),
       RETRIEVE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/posts/${id}`, method: 'GET' as HttpMethod })
     },
     EVENT: {

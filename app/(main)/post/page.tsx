@@ -161,7 +161,9 @@ export default function PostPage() {
 
       try {
         setIsLoading(true)
-        const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST as ApiEndpoint)
+        const groupType = selectedType.toUpperCase() as 'STUDY' | 'EVENT'
+        const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST(groupType))
+
         if (!res.ok) {
           throw new Error('게시글을 불러오는 중 오류가 발생했습니다.')
         }

@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { MoreHorizontal } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
-import { GoPencil, GoTrash } from 'react-icons/go'
+import { GoPencil } from 'react-icons/go'
 import { MdContentCopy } from 'react-icons/md'
 
 import EditableCell from '@/components/admin/DataTable/EditableCell'
@@ -16,12 +16,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
+import { API_ENDPOINTS } from '@/constants/apiEndpoint'
 import { ROUTES } from '@/constants/routes'
-import { fetchData } from '@/lib/fetch'
 import { Study } from '@/types'
 
 import DeleteButton from '../../DeleteButton'
@@ -53,22 +51,6 @@ export const columns: ColumnDef<Study>[] = [
                   &nbsp;링크
                 </Link>
               </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={async () => {
-                  const res = await fetchData(API_ENDPOINTS.ADMIN.STUDY.DELETE(study.id) as ApiEndpoint)
-                  if (!res.ok) {
-                    console.error('Failed to delete', study.id)
-                    return
-                  }
-                  const data = await res.json()
-                  console.log('Deleted', study.id, data)
-                }}
-              >
-                <GoTrash size={13} />
-                &nbsp;삭제
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -76,15 +58,6 @@ export const columns: ColumnDef<Study>[] = [
     }
   },
   rowSelect as ColumnDef<Study>,
-  {
-    id: 'delete',
-    header: '삭제',
-    cell: ({ row }) => (
-      <div className="text-center">
-        <DeleteButton id={row.original.id} type="study" />
-      </div>
-    )
-  },
   {
     accessorKey: 'id',
     header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
@@ -161,5 +134,14 @@ export const columns: ColumnDef<Study>[] = [
     accessorKey: 'semester',
     header: ({ column }) => <DataTableColumnHeader column={column} title="학기" />,
     cell: ({ row }) => <div className="text-center">{row.original.semester}</div>
+  },
+  {
+    id: 'delete',
+    header: () => <p className="text-center text-sm">삭제</p>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DeleteButton id={row.original.id} type="study" />
+      </div>
+    )
   }
 ]

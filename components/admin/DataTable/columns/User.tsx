@@ -11,15 +11,6 @@ import DeleteButton from '../../DeleteButton'
 
 export const columns: ColumnDef<User>[] = [
   {
-    id: 'delete',
-    header: '삭제',
-    cell: ({ row }) => (
-      <div className="text-center">
-        <DeleteButton id={row.original.id} type="user" />
-      </div>
-    )
-  },
-  {
     accessorKey: 'id',
     header: () => <div className="text-center text-base">ID</div>,
     cell: ({ row }) => <p className="text-center text-base">{row.original.id}</p>
@@ -114,6 +105,15 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <img src={row.original.profileImage} alt={row.original.username} className="h-10 w-10" />
+      </div>
+    )
+  },
+  {
+    id: 'delete',
+    header: () => <p className="text-center text-sm">삭제</p>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DeleteButton id={row.original.id} type="user" />
       </div>
     )
   }

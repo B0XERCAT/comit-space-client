@@ -1,11 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { toast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
+import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
 import { Event, Study } from '@/types'
@@ -49,8 +50,26 @@ interface Group {
 }
 
 function PostCard({ post }: { post: Post }) {
+  const router = useRouter()
+  const session = useSession()
+
+  const handlePostClick = () => {
+    if (!session?.data?.accessToken) {
+      toast({
+        variant: 'destructive',
+        description: '게시글을 보려면 로그인이 필요합니다.'
+      })
+      return
+    }
+
+    router.push(`/post/${post.id}`)
+  }
+
   return (
-    <div className="mb-8 overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div
+      className="mb-8 cursor-pointer overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md"
+      onClick={handlePostClick}
+    >
       <div className="flex p-6">
         <div className="flex-1">
           {/* Author info */}
@@ -184,76 +203,32 @@ export default function PostBoard() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex items-center justify-center p-8">
         <div className="text-center text-gray-500">{error}</div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <div className="w-64 border-r bg-gray-50">
-        <div className="p-4">
-          <h2 className="mb-4 text-lg font-semibold">스터디</h2>
-          <ul className="space-y-2">
-            {groups
-              .filter((group) => group.type === 'study')
-              .map((study) => (
-                <li key={`study-${study.id}`}>
-                  <Link
-                    href={`/post?id=${study.id}&groupType=study`}
-                    className={`block rounded-lg p-2 hover:bg-gray-100 ${
-                      selectedId === study.id.toString() && selectedType === 'study' ? 'bg-gray-200' : ''
-                    }`}
-                  >
-                    {study.title}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-
-          <h2 className="mb-4 mt-8 text-lg font-semibold">이벤트</h2>
-          <ul className="space-y-2">
-            {groups
-              .filter((group) => group.type === 'event')
-              .map((event) => (
-                <li key={`event-${event.id}`}>
-                  <Link
-                    href={`/post?id=${event.id}&groupType=event`}
-                    className={`block rounded-lg p-2 hover:bg-gray-100 ${
-                      selectedId === event.id.toString() && selectedType === 'event' ? 'bg-gray-200' : ''
-                    }`}
-                  >
-                    {event.title}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 bg-gray-100 p-8">
-        {selectedId && selectedType ? (
-          <div>
-            <h1 className="mb-8 text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
-            <div className="space-y-4">
-              {isPostsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-gray-500">Loading...</div>
-                </div>
-              ) : posts.length > 0 ? (
-                posts.map((post) => <PostCard key={post.id} post={post} />)
-              ) : (
-                <div className="text-center text-gray-500">아직 작성된 게시글이 없습니다.</div>
-              )}
-            </div>
+    <div className="p-8">
+      {selectedId && selectedType ? (
+        <div>
+          <h1 className="mb-8 text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
+          <div className="space-y-4">
+            {isPostsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-500">Loading...</div>
+              </div>
+            ) : posts.length > 0 ? (
+              posts.map((post) => <PostCard key={post.id} post={post} />)
+            ) : (
+              <div className="text-center text-gray-500">아직 작성된 게시글이 없습니다.</div>
+            )}
           </div>
-        ) : (
-          <div className="text-center text-gray-500">게시판을 선택해주세요</div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="text-center text-gray-500">게시판을 선택해주세요</div>
+      )}
     </div>
   )
 }

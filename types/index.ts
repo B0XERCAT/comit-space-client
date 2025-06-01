@@ -65,3 +65,22 @@ export interface Reservation {
   description: string
   isVerified: ReservationStatus
 }
+
+export interface Post {
+  id: number
+  groupId: number
+  groupType: 'STUDY' | 'EVENT'
+  title: string
+  content: string
+  author: User
+  imageSrc: string | null
+  likeCount: number
+  comments: Comment[]
+}
+
+export interface Comment {
+  id: number
+  postId: number
+  content: string
+  author: User
+}

@@ -8,6 +8,13 @@ import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
 import { Event } from '@/types'
 
+const formatDateRange = (startDate: string, endDate: string) => {
+  if (startDate === endDate) {
+    return startDate
+  }
+  return `${startDate} ~ ${endDate}`
+}
+
 const EventList = async () => {
   try {
     const res = await fetchData(API_ENDPOINTS.CLIENT.EVENT.LIST as ApiEndpoint)
@@ -38,8 +45,7 @@ const EventList = async () => {
               <div className="mt-4 flex flex-col gap-2 text-gray-600">
                 <div className="flex items-center gap-2">
                   <MdCalendarMonth className="text-lg" />
-                  {/* TODO!: semester 대신 month day로 바꾸기 */}
-                  {event.semester} {event.year}
+                  {formatDateRange(event.startDate, event.endDate)}
                 </div>
                 <div className="flex items-center gap-2">
                   <IoLocationOutline className="text-lg" />

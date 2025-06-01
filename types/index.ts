@@ -41,6 +41,8 @@ export interface Event {
   id: number
   title: string
   imageSrc: string
+  startDate: string
+  endDate: string
   startTime: string
   endTime: string
   location: string

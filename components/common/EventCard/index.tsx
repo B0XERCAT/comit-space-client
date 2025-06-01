@@ -12,21 +12,20 @@ const RecruitingStatus = ({ isRecruiting }: { isRecruiting: boolean }) => {
   )
 }
 
-// TODO!: startTime endTime을 실제 날짜로 바꾸기
-const TimeAndLocation = ({
-  startTime,
-  endTime,
+const DateAndLocation = ({
+  startDate,
+  endDate,
   location
 }: {
-  startTime: string
-  endTime: string
+  startDate: string
+  endDate: string
   location: string
 }) => {
+  const dateText = startDate === endDate ? startDate : `${startDate} ~ ${endDate}`
+
   return (
     <div className="flex flex-col items-center gap-1">
-      <p className="text-center text-sm text-gray-500">
-        {startTime.substring(0, 5)} ~ {endTime.substring(0, 5)}
-      </p>
+      <p className="text-center text-sm text-gray-500">{dateText}</p>
       <p className="text-center text-sm text-gray-500">{location}</p>
     </div>
   )
@@ -64,7 +63,7 @@ export default function EventCard({ event, imageSize, showStatus, imageWrapperCl
 
       <p className="text-center text-base font-bold sm:text-lg">{event.title}</p>
 
-      <TimeAndLocation startTime={event.startTime} endTime={event.endTime} location={event.location} />
+      <DateAndLocation startDate={event.startDate} endDate={event.endDate} location={event.location} />
     </Card>
   )
 }

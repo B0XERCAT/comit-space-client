@@ -61,7 +61,7 @@ export default function CreateEvent() {
     control,
     setError,
     clearErrors,
-    formState: { errors }
+    formState: { errors, isSubmitting }
   } = useForm<EventForm>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -138,6 +138,7 @@ export default function CreateEvent() {
   }
 
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
     const newTag = e.currentTarget.value.trim()
 
     if (watchedTags.length === 4) {
@@ -339,6 +340,12 @@ export default function CreateEvent() {
             onChange={handleTagChange}
             onKeyDown={handleTagAdd}
             placeholder="태그를 입력하고 Enter를 누르세요"
+            type="text"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+              }
+            }}
           />
           {tagError && <p className="text-sm text-red-500">{tagError}</p>}
           {errors.tags && <p className="text-sm text-red-500">{errors.tags.message}</p>}
@@ -353,8 +360,8 @@ export default function CreateEvent() {
 
         {/* Submit Button */}
         <div className="flex justify-end">
-          <Button type="submit" className="mb-10 px-8">
-            행사 등록
+          <Button type="submit" className="mb-10 px-8" disabled={isSubmitting}>
+            {isSubmitting ? '등록 중...' : '행사 등록'}
           </Button>
         </div>
       </form>

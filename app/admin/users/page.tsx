@@ -16,9 +16,8 @@ const UserManagePage = async () => {
   const users = (await res.json()).data as User[]
 
   return (
-    <div className="p-5">
-      <h1 className="flex w-full items-center justify-start text-3xl font-extrabold">유저 관리</h1>
-
+    <div className="overflow-auto px-5 py-12" style={{ scrollbarWidth: 'thin', scrollbarColor: 'gray transparent' }}>
+      <p className="mb-3 flex w-full items-center justify-start text-3xl font-semibold">유저 관리</p>
       <AdminDataTable columns={columns} data={users} />
     </div>
   )

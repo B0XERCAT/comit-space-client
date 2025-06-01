@@ -16,9 +16,8 @@ const StudyManagePage = async () => {
   const studies = (await res.json()).data as Study[]
 
   return (
-    <div className="overflow-auto p-5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'gray transparent' }}>
-      <h1 className="mb-3 flex w-full items-center justify-start text-3xl font-extrabold">스터디 관리</h1>
-
+    <div className="overflow-auto px-5 py-12" style={{ scrollbarWidth: 'thin', scrollbarColor: 'gray transparent' }}>
+      <p className="mb-3 flex w-full items-center justify-start text-3xl font-semibold">스터디 관리</p>
       <AdminDataTable columns={columns} data={studies} />
     </div>
   )

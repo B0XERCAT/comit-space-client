@@ -16,15 +16,15 @@ const UserHoverCard = ({ user }: { user: User }) => {
 }
 
 export const UserHoverCardContent = ({ user }: { user: User }) => {
-  const firstName = user.username.substring(1) // TODO: 성이 2자 이상인 경우나 없?는 경우 처리
+  const firstName = user.username.substring(1)
 
   return (
-    <HoverCardContent className="flex gap-x-3">
+    <HoverCardContent className="flex w-fit items-center gap-x-2">
       <Avatar>
         {user.profileImage ? <AvatarImage src={user.profileImage} /> : <AvatarFallback>{firstName}</AvatarFallback>}
       </Avatar>
 
-      <div className="w-full space-y-1">
+      <div className="w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-x-1">
             <span className="font-bold">{user.username}</span>

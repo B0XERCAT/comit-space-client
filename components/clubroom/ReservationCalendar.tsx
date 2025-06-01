@@ -19,13 +19,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
 import { Reservation } from '@/types'
-
-import { toast } from '../ui/use-toast'
 
 interface ReservationCalendarProps {
   onMonthChange: (year: number, month: number) => void
@@ -53,6 +52,7 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const session = useSession()
+  const { toast } = useToast()
 
   const loadReservations = async (year: number, month: number) => {
     const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.LIST(year, month) as ApiEndpoint)
@@ -66,7 +66,10 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
 
   const handleDateClick = (info: { dateStr: string }) => {
     if (!session) {
-      alert('예약하려면 로그인이 필요합니다.')
+      toast({
+        variant: 'destructive',
+        description: '예약하려면 로그인이 필요합니다.'
+      })
       return
     }
     setSelectedDate(info.dateStr)

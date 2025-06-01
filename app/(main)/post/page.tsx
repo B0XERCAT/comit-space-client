@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
@@ -18,9 +18,11 @@ interface Group {
 export default function PostPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const selectedId = searchParams.get('id')
   const selectedType = searchParams.get('groupType')
+  const router = useRouter()
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -52,19 +54,39 @@ export default function PostPage() {
         }))
 
         // Combine and set groups
-        setGroups([...studyGroups, ...eventGroups])
+        const allGroups = [...studyGroups, ...eventGroups]
+
+        if (allGroups.length === 0) {
+          setError('현재 등록된 스터디나 이벤트가 없습니다.')
+        } else {
+          setGroups(allGroups)
+          // If no item is selected, redirect to the first item
+          if (!selectedId && !selectedType) {
+            const firstGroup = allGroups[0]
+            router.push(`/post?id=${firstGroup.id}&groupType=${firstGroup.type}`)
+          }
+        }
       } catch (error) {
         console.error('Error fetching groups:', error)
+        setError('데이터를 불러오는 중 오류가 발생했습니다.')
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchGroups()
-  }, [])
+  }, [selectedId, selectedType, router])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center text-gray-500">{error}</div>
+      </div>
+    )
   }
 
   return (

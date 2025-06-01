@@ -95,13 +95,14 @@ function PostCard({ post }: { post: Post }) {
 export default function PostPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [posts, setPosts] = useState<Post[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isPostsLoading, setIsPostsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const selectedId = searchParams.get('id')
   const selectedType = searchParams.get('groupType')
   const router = useRouter()
 
+  // Load groups first
   useEffect(() => {
     const fetchGroups = async () => {
       try {
@@ -147,20 +148,19 @@ export default function PostPage() {
       } catch (error) {
         console.error('Error fetching groups:', error)
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
-      } finally {
-        setIsLoading(false)
       }
     }
 
     fetchGroups()
-  }, [selectedId, selectedType, router])
+  }, []) // Only run once on mount
 
+  // Load posts when selection changes
   useEffect(() => {
     const fetchPosts = async () => {
-      if (!selectedType) return
+      if (!selectedType || !selectedId) return
 
       try {
-        setIsLoading(true)
+        setIsPostsLoading(true)
         const groupType = selectedType.toUpperCase() as 'STUDY' | 'EVENT'
         const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST(groupType))
 
@@ -175,16 +175,12 @@ export default function PostPage() {
         console.error('Error fetching posts:', error)
         setError('게시글을 불러오는 중 오류가 발생했습니다.')
       } finally {
-        setIsLoading(false)
+        setIsPostsLoading(false)
       }
     }
 
     fetchPosts()
   }, [selectedId, selectedType])
-
-  if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
-  }
 
   if (error) {
     return (
@@ -243,7 +239,11 @@ export default function PostPage() {
           <div>
             <h1 className="mb-8 text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
             <div className="space-y-4">
-              {posts.length > 0 ? (
+              {isPostsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-gray-500">Loading...</div>
+                </div>
+              ) : posts.length > 0 ? (
                 posts.map((post) => <PostCard key={post.id} post={post} />)
               ) : (
                 <div className="text-center text-gray-500">아직 작성된 게시글이 없습니다.</div>

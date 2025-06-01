@@ -24,10 +24,13 @@ const studyCheckedColums = ['delete', 'id', 'title', 'mentor', 'level', 'campus'
 
 export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps<TData>) {
   const pathname = usePathname()
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([])
+  const defaultCheckedColumns = pathname.includes('users') ? userCheckedColumns : studyCheckedColums
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultCheckedColumns)
 
   useEffect(() => {
     const defaultCheckedColumns = pathname.includes('users') ? userCheckedColumns : studyCheckedColums
+    setVisibleColumns(defaultCheckedColumns)
+
     table.getAllColumns().forEach((column) => {
       if (defaultCheckedColumns.includes(column.id)) {
         column.toggleVisibility(true)
@@ -35,7 +38,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
         column.toggleVisibility(false)
       }
     })
-  }, [table])
+  }, [table, pathname])
 
   const handleCheckedChange = (columnId: string, isChecked: boolean) => {
     setVisibleColumns((prev) => {

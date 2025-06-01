@@ -1,6 +1,6 @@
 'use client'
 
-import { DatesSetArg } from '@fullcalendar/core'
+import { DatesSetArg, EventClickArg } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
@@ -31,6 +31,18 @@ interface ReservationCalendarProps {
   onMonthChange: (year: number, month: number) => void
 }
 
+const statusColors = {
+  ACCEPT: 'text-green-500',
+  WAIT: 'text-orange-500',
+  DECLINE: 'text-red-500'
+}
+
+const statusText = {
+  ACCEPT: '승인됨',
+  WAIT: '대기중',
+  DECLINE: '거절됨'
+}
+
 export default function ReservationCalendar({ onMonthChange }: ReservationCalendarProps) {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -38,6 +50,8 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const session = useSession()
 
   const loadReservations = async (year: number, month: number) => {
@@ -102,12 +116,22 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
     })
   }
 
+  const handleEventClick = (arg: EventClickArg) => {
+    const reservationId = arg.event.id
+    const reservation = reservations.find((r) => r.id === parseInt(reservationId))
+    if (reservation) {
+      setSelectedReservation(reservation)
+      setIsDetailsDialogOpen(true)
+    }
+  }
+
   useEffect(() => {
     const today = new Date()
     loadReservations(today.getFullYear(), today.getMonth() + 1)
   }, [])
 
   const events = reservations.map((reservation) => ({
+    id: reservation.id.toString(),
     title: `${reservation.title} (${reservation.reserver.username})`,
     start: reservation.startTime,
     end: reservation.endTime,
@@ -133,6 +157,7 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
         }}
         events={events}
         dateClick={handleDateClick}
+        eventClick={handleEventClick}
         datesSet={handleDatesSet}
         height="auto"
         locale="ko"
@@ -191,6 +216,50 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
               취소
             </Button>
             <Button onClick={handleReservation}>예약하기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl">예약 정보</DialogTitle>
+          </DialogHeader>
+
+          {selectedReservation && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>예약자</Label>
+                <p className="text-base text-gray-600">{selectedReservation.reserver.username}</p>
+              </div>
+              <div className="space-y-2">
+                <Label>상태</Label>
+                <p className={`text-base ${statusColors[selectedReservation.isVerified]}`}>
+                  {statusText[selectedReservation.isVerified]}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>제목</Label>
+                <p className="text-base text-gray-600">{selectedReservation.title}</p>
+              </div>
+              <div className="space-y-2">
+                <Label>시간</Label>
+                <p className="text-base text-gray-600">
+                  {new Date(selectedReservation.startTime).toLocaleString()} -{' '}
+                  {new Date(selectedReservation.endTime).toLocaleString()}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>설명</Label>
+                <p className="text-base text-gray-600">{selectedReservation.description}</p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
+              닫기
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

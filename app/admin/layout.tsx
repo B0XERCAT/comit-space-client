@@ -23,7 +23,7 @@ export default function RootLayout({
         }}
       >
         <SideBar className="w-1/5" />
-        <div className="w-full">{children}</div>
+        <div className="w-11/12">{children}</div>
       </div>
       <Footer height={footerHeight} />
       <Toaster />

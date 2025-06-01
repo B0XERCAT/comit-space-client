@@ -47,7 +47,10 @@ export default function MyReservationList({ currentMonth }: MyReservationListPro
   const session = useSession()
 
   const loadMyReservations = async () => {
-    if (!session?.data?.accessToken) return
+    if (!session?.data?.accessToken) {
+      setIsLoading(false)
+      return
+    }
 
     try {
       const res = await fetchData(
@@ -110,6 +113,10 @@ export default function MyReservationList({ currentMonth }: MyReservationListPro
   useEffect(() => {
     loadMyReservations()
   }, [session, currentMonth])
+
+  if (!session?.data?.accessToken) {
+    return null
+  }
 
   if (isLoading) {
     return <div className="text-center">로딩중...</div>

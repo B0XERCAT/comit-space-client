@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -9,14 +10,91 @@ import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
 import { Event, Study } from '@/types'
 
+interface Author {
+  id: number
+  username: string
+  phoneNumber: string
+  studentId: string
+  email: string
+  position: string
+  bio: string | null
+  github: string | null
+  blog: string | null
+  profileImage: string | null
+}
+
+interface Comment {
+  id: number
+  postId: number
+  content: string
+  author: Author
+}
+
+interface Post {
+  id: number
+  groupId: number
+  groupType: 'STUDY' | 'EVENT'
+  title: string
+  content: string
+  author: Author
+  imageSrc: string | null
+  likeCount: number
+  comments: Comment[]
+}
+
 interface Group {
   id: number
   title: string
   type: 'study' | 'event'
 }
 
+function PostCard({ post }: { post: Post }) {
+  return (
+    <div className="mb-8 overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex p-6">
+        <div className="flex-1">
+          {/* Author info */}
+          <div className="mb-3 flex items-center gap-2">
+            {post.author.profileImage ? (
+              <Image
+                src={post.author.profileImage}
+                alt={post.author.username}
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-gray-200" />
+            )}
+            <span className="font-medium">{post.author.username}</span>
+            <span className="text-sm text-gray-500">· {post.author.position}</span>
+          </div>
+
+          {/* Title and content */}
+          <h3 className="mb-2 text-xl font-bold">{post.title}</h3>
+          <p className="mb-4 line-clamp-3 text-gray-600">{post.content}</p>
+
+          {/* Post info */}
+          <div className="flex items-center gap-4 text-sm text-gray-500">
+            <span>좋아요 {post.likeCount}</span>
+            <span>댓글 {post.comments.length}</span>
+          </div>
+        </div>
+
+        {/* Thumbnail */}
+        {post.imageSrc && (
+          <div className="ml-4 flex-shrink-0">
+            <Image src={post.imageSrc} alt={post.title} width={120} height={120} className="rounded-lg object-cover" />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function PostPage() {
   const [groups, setGroups] = useState<Group[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
@@ -77,6 +155,31 @@ export default function PostPage() {
     fetchGroups()
   }, [selectedId, selectedType, router])
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!selectedType) return
+
+      try {
+        setIsLoading(true)
+        const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST as ApiEndpoint)
+        if (!res.ok) {
+          throw new Error('게시글을 불러오는 중 오류가 발생했습니다.')
+        }
+        const json: CustomResponse = await res.json()
+        const allPosts: Post[] = json.data
+        // Filter posts by selected group
+        setPosts(allPosts.filter((post) => post.groupId.toString() === selectedId))
+      } catch (error) {
+        console.error('Error fetching posts:', error)
+        setError('게시글을 불러오는 중 오류가 발생했습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [selectedId, selectedType])
+
   if (isLoading) {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>
   }
@@ -133,11 +236,18 @@ export default function PostPage() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 bg-gray-100 p-8">
         {selectedId && selectedType ? (
-          <h1>
-            Selected: {selectedType} #{selectedId}
-          </h1>
+          <div>
+            <h1 className="mb-8 text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
+            <div className="space-y-4">
+              {posts.length > 0 ? (
+                posts.map((post) => <PostCard key={post.id} post={post} />)
+              ) : (
+                <div className="text-center text-gray-500">아직 작성된 게시글이 없습니다.</div>
+              )}
+            </div>
+          </div>
         ) : (
           <div className="text-center text-gray-500">게시판을 선택해주세요</div>
         )}

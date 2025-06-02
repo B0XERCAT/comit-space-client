@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
@@ -213,7 +214,12 @@ export default function PostBoard() {
     <div className="p-8">
       {selectedId && selectedType ? (
         <div>
-          <h1 className="mb-8 text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
+          <div className="mb-8 flex items-center justify-between">
+            <h1 className="text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
+            <Button onClick={() => router.push(`/post/create?id=${selectedId}&groupType=${selectedType}`)}>
+              게시글 작성
+            </Button>
+          </div>
           <div className="space-y-4">
             {isPostsLoading ? (
               <div className="flex items-center justify-center py-8">

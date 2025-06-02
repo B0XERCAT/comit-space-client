@@ -52,7 +52,11 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/posts?groupType=${groupType}`,
         method: 'GET' as HttpMethod
       }),
-      RETRIEVE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/posts/${id}`, method: 'GET' as HttpMethod })
+      RETRIEVE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/posts/${id}`, method: 'GET' as HttpMethod }),
+      CREATE: (groupType: 'STUDY' | 'EVENT', groupId: number) => ({
+        url: `${baseURL}/${API_PREFIX}/posts/${groupType}/${groupId}`,
+        method: 'POST' as HttpMethod
+      })
     },
     EVENT: {
       LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod }

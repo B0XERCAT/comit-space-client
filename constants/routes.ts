@@ -41,6 +41,10 @@ export const ROUTES = {
     index: {
       name: '게시판',
       url: '/post'
+    },
+    CREATE: {
+      name: '게시글 작성',
+      url: '/post/create'
     }
   },
   CLUBROOM: {

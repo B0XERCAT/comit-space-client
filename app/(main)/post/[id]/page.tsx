@@ -1,10 +1,12 @@
 'use client'
 
+import { Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import CommentForm from '@/components/post/CommentForm'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
@@ -49,6 +51,37 @@ export default function PostDetail() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: number, authorId: number) => {
+    if (!session?.data?.accessToken) {
+      toast({
+        variant: 'destructive',
+        description: '댓글을 삭제하려면 로그인이 필요합니다.'
+      })
+      return
+    }
+
+    try {
+      const res = await fetchData(API_ENDPOINTS.CLIENT.POST.COMMENT.DELETE(commentId) as ApiEndpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('댓글 삭제에 실패했습니다.')
+      }
+
+      fetchPost()
+    } catch (error) {
+      console.error('Failed to delete comment:', error)
+      toast({
+        variant: 'destructive',
+        description: '댓글 삭제에 실패했습니다.'
+      })
     }
   }
 
@@ -120,20 +153,32 @@ export default function PostDetail() {
           <div className="space-y-6">
             {post.comments.map((comment) => (
               <div key={comment.id} className="rounded-lg border bg-white p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  {comment.author.profileImage ? (
-                    <Image
-                      src={comment.author.profileImage}
-                      alt={comment.author.username}
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-gray-200" />
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {comment.author.profileImage ? (
+                      <Image
+                        src={comment.author.profileImage}
+                        alt={comment.author.username}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-gray-200" />
+                    )}
+                    <span className="font-medium">{comment.author.username}</span>
+                    <span className="text-sm text-gray-500">· {comment.author.position}</span>
+                  </div>
+                  {session?.data?.username === comment.author.username && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteComment(comment.id, comment.author.id)}
+                      className="h-8 w-8 text-gray-500 hover:text-red-500"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   )}
-                  <span className="font-medium">{comment.author.username}</span>
-                  <span className="text-sm text-gray-500">· {comment.author.position}</span>
                 </div>
                 <p className="text-gray-700">{comment.content}</p>
               </div>

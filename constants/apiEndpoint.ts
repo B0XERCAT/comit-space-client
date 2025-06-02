@@ -61,6 +61,10 @@ const JSP_ENDPOINTS = {
         CREATE: (postId: number) => ({
           url: `${baseURL}/${API_PREFIX}/posts/${postId}/comments`,
           method: 'POST' as HttpMethod
+        }),
+        DELETE: (commentId: number) => ({
+          url: `${baseURL}/${API_PREFIX}/comments/${commentId}`,
+          method: 'DELETE' as HttpMethod
         })
       }
     },

@@ -54,10 +54,6 @@ export default function CommentForm({ postId, onCommentAdded }: CommentFormProps
         throw new Error('댓글 작성에 실패했습니다.')
       }
 
-      toast({
-        description: '댓글이 작성되었습니다.'
-      })
-
       // 입력 필드 초기화
       setContent('')
       // 부모 컴포넌트에 댓글이 추가되었음을 알림

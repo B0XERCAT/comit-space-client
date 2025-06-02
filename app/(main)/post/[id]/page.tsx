@@ -19,40 +19,40 @@ export default function PostDetail() {
   const [post, setPost] = useState<Post | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      if (!session?.data?.accessToken) {
-        toast({
-          variant: 'destructive',
-          description: '게시글을 보려면 로그인이 필요합니다.'
-        })
-        return
-      }
-
-      try {
-        const res = await fetchData(API_ENDPOINTS.CLIENT.POST.RETRIEVE(Number(params.id)) as ApiEndpoint, {
-          headers: {
-            Authorization: `Bearer ${session.data.accessToken}`
-          }
-        })
-
-        if (!res.ok) {
-          throw new Error('게시글을 불러오는데 실패했습니다.')
-        }
-
-        const json: CustomResponse = await res.json()
-        setPost(json.data)
-      } catch (error) {
-        console.error('Failed to load post:', error)
-        toast({
-          variant: 'destructive',
-          description: '게시글을 불러오는데 실패했습니다.'
-        })
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchPost = async () => {
+    if (!session?.data?.accessToken) {
+      toast({
+        variant: 'destructive',
+        description: '게시글을 보려면 로그인이 필요합니다.'
+      })
+      return
     }
 
+    try {
+      const res = await fetchData(API_ENDPOINTS.CLIENT.POST.RETRIEVE(Number(params.id)) as ApiEndpoint, {
+        headers: {
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('게시글을 불러오는데 실패했습니다.')
+      }
+
+      const json: CustomResponse = await res.json()
+      setPost(json.data)
+    } catch (error) {
+      console.error('Failed to load post:', error)
+      toast({
+        variant: 'destructive',
+        description: '게시글을 불러오는데 실패했습니다.'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchPost()
   }, [params.id, session])
 
@@ -114,7 +114,7 @@ export default function PostDetail() {
           <h2 className="mb-6 text-2xl font-bold">댓글</h2>
 
           {/* Comment form */}
-          <CommentForm postId={post.id} onCommentAdded={() => {}} />
+          <CommentForm postId={post.id} onCommentAdded={fetchPost} />
 
           {/* Comment list */}
           <div className="space-y-6">

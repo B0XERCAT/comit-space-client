@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -28,7 +28,7 @@ const schema = z.object({
 
 type PostForm = z.infer<typeof schema>
 
-export default function CreatePost() {
+function CreatePostForm() {
   const session = useSession()
   const router = useRouter()
   const { toast } = useToast()
@@ -166,5 +166,13 @@ export default function CreatePost() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function CreatePost() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-8">Loading...</div>}>
+      <CreatePostForm />
+    </Suspense>
   )
 }

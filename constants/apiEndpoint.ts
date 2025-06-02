@@ -56,7 +56,13 @@ const JSP_ENDPOINTS = {
       CREATE: (groupType: 'STUDY' | 'EVENT', groupId: number) => ({
         url: `${baseURL}/${API_PREFIX}/posts/${groupType}/${groupId}`,
         method: 'POST' as HttpMethod
-      })
+      }),
+      COMMENT: {
+        CREATE: (postId: number) => ({
+          url: `${baseURL}/${API_PREFIX}/posts/${postId}/comments`,
+          method: 'POST' as HttpMethod
+        })
+      }
     },
     EVENT: {
       LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod }

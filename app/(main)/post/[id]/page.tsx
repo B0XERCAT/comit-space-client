@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import CommentForm from '@/components/post/CommentForm'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
@@ -109,34 +110,38 @@ export default function PostDetail() {
         </div>
 
         {/* Comments section */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold">댓글</h2>
-          {post.comments.length > 0 ? (
-            <div className="space-y-4">
-              {post.comments.map((comment) => (
-                <div key={comment.id} className="rounded-lg bg-gray-50 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    {comment.author.profileImage ? (
-                      <Image
-                        src={comment.author.profileImage}
-                        alt={comment.author.username}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      <div className="h-6 w-6 rounded-full bg-gray-200" />
-                    )}
-                    <span className="font-medium">{comment.author.username}</span>
-                    <span className="text-sm text-gray-500">· {comment.author.position}</span>
-                  </div>
-                  <p className="text-gray-700">{comment.content}</p>
+        <div className="mt-12">
+          <h2 className="mb-6 text-2xl font-bold">댓글</h2>
+
+          {/* Comment form */}
+          <CommentForm postId={post.id} onCommentAdded={() => {}} />
+
+          {/* Comment list */}
+          <div className="space-y-6">
+            {post.comments.map((comment) => (
+              <div key={comment.id} className="rounded-lg border bg-white p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  {comment.author.profileImage ? (
+                    <Image
+                      src={comment.author.profileImage}
+                      alt={comment.author.username}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-gray-200" />
+                  )}
+                  <span className="font-medium">{comment.author.username}</span>
+                  <span className="text-sm text-gray-500">· {comment.author.position}</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-gray-500">아직 작성된 댓글이 없습니다.</div>
-          )}
+                <p className="text-gray-700">{comment.content}</p>
+              </div>
+            ))}
+            {post.comments.length === 0 && (
+              <div className="text-center text-gray-500">아직 작성된 댓글이 없습니다.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

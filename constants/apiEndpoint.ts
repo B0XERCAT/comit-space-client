@@ -91,7 +91,8 @@ const JSP_ENDPOINTS = {
       RETRIEVE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'GET' as HttpMethod },
       UPDATE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'PATCH' as HttpMethod },
       DELETE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'DELETE' as HttpMethod },
-      CREATED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/studies-created`, method: 'GET' as HttpMethod }
+      CREATED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/created-studies`, method: 'GET' as HttpMethod },
+      JOINED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/joined-studies`, method: 'GET' as HttpMethod }
     }
   },
   AUTH: {

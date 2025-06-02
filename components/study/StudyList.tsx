@@ -65,7 +65,7 @@ const StudyList = async () => {
                     </div>
                     <div className="mb-4 mt-1 flex items-center gap-2 break-words">
                       <RiStackOverflowLine />
-                      {study.tags.join(', ')}
+                      {study.tags?.join(', ') || '태그 없음'}
                     </div>
                     <DialogDescription className="whitespace-pre-line break-keep">
                       {study.description}

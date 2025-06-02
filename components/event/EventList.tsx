@@ -53,7 +53,7 @@ const EventList = async () => {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {event.tags.map((tag) => (
+                {event.tags?.map((tag) => (
                   <span key={tag} className="rounded-full bg-gray-100 px-3 py-1 text-sm">
                     {tag}
                   </span>

@@ -6,6 +6,17 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import CommentForm from '@/components/post/CommentForm'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
@@ -170,14 +181,30 @@ export default function PostDetail() {
                     <span className="text-sm text-gray-500">· {comment.author.position}</span>
                   </div>
                   {session?.data?.username === comment.author.username && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteComment(comment.id, comment.author.id)}
-                      className="h-8 w-8 text-gray-500 hover:text-red-500"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-red-500">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>댓글 삭제</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            이 댓글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>취소</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteComment(comment.id, comment.author.id)}
+                            className="bg-red-500 hover:bg-red-600"
+                          >
+                            삭제
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </div>
                 <p className="text-gray-700">{comment.content}</p>

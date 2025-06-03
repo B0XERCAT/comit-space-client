@@ -28,6 +28,7 @@ import { Reservation } from '@/types'
 
 interface ReservationCalendarProps {
   onMonthChange: (year: number, month: number) => void
+  onRefresh: () => void
 }
 
 const statusColors = {
@@ -42,7 +43,7 @@ const statusText = {
   DECLINE: '거절됨'
 }
 
-export default function ReservationCalendar({ onMonthChange }: ReservationCalendarProps) {
+export default function ReservationCalendar({ onMonthChange, onRefresh }: ReservationCalendarProps) {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedTime, setSelectedTime] = useState({ start: '09:00', end: '10:00' })
@@ -99,7 +100,7 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
       },
       credentials: 'include'
     })
-
+    console.log(reservationData)
     if (!res.ok) {
       toast({
         title: '이미 예약된 시간입니다. 다른 시간을 선택해 주세요.',
@@ -110,6 +111,7 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
 
     const json: CustomResponse = await res.json()
     setReservations([...reservations, json.data])
+    onRefresh()
     setIsDialogOpen(false)
     setTitle('')
     setDescription('')
@@ -132,6 +134,11 @@ export default function ReservationCalendar({ onMonthChange }: ReservationCalend
     const today = new Date()
     loadReservations(today.getFullYear(), today.getMonth() + 1)
   }, [])
+
+  useEffect(() => {
+    const currentDate = new Date()
+    loadReservations(currentDate.getFullYear(), currentDate.getMonth() + 1)
+  }, [onRefresh])
 
   const events = reservations.map((reservation) => ({
     id: reservation.id.toString(),

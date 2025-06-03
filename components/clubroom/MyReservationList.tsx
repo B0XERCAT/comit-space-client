@@ -38,9 +38,10 @@ const statusText = {
 
 interface MyReservationListProps {
   currentMonth: CurrentMonth
+  onRefresh: () => void
 }
 
-export default function MyReservationList({ currentMonth }: MyReservationListProps) {
+export default function MyReservationList({ currentMonth, onRefresh }: MyReservationListProps) {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [reservationToDelete, setReservationToDelete] = useState<Reservation | null>(null)
@@ -95,6 +96,7 @@ export default function MyReservationList({ currentMonth }: MyReservationListPro
       }
 
       setReservations((prev) => prev.filter((reservation) => reservation.id !== reservationToDelete.id))
+      onRefresh()
       toast({
         title: '예약이 성공적으로 삭제되었습니다.',
         variant: 'default'
@@ -113,6 +115,10 @@ export default function MyReservationList({ currentMonth }: MyReservationListPro
   useEffect(() => {
     loadMyReservations()
   }, [session, currentMonth])
+
+  useEffect(() => {
+    loadMyReservations()
+  }, [onRefresh])
 
   if (!session?.data?.accessToken) {
     return null

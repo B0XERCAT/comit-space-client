@@ -73,15 +73,15 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
       })
       return
     }
-    setSelectedDate(info.dateStr)
+    setSelectedDate(info.dateStr.split('T')[0])
     setIsDialogOpen(true)
   }
 
   const handleReservation = async () => {
     if (!session || !selectedDate) return
 
-    const startDateTime = `${selectedDate}T${selectedTime.start}:00`
-    const endDateTime = `${selectedDate}T${selectedTime.end}:00`
+    const startDateTime = new Date(`${selectedDate}T${selectedTime.start}`).toISOString()
+    const endDateTime = new Date(`${selectedDate}T${selectedTime.end}`).toISOString()
 
     const reservationData = {
       studyId: 1,
@@ -90,6 +90,8 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
       title,
       description
     }
+
+    console.log(reservationData)
 
     const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.CREATE as ApiEndpoint, {
       method: 'POST',
@@ -100,7 +102,6 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
       },
       credentials: 'include'
     })
-    console.log(reservationData)
     if (!res.ok) {
       toast({
         title: '이미 예약된 시간입니다. 다른 시간을 선택해 주세요.',

@@ -121,6 +121,7 @@ export default function PostBoard() {
   const selectedId = searchParams.get('id')
   const selectedType = searchParams.get('groupType')
   const router = useRouter()
+  const session = useSession()
 
   // Load groups first
   useEffect(() => {
@@ -216,7 +217,52 @@ export default function PostBoard() {
         <div>
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
-            <Button onClick={() => router.push(`/post/create?id=${selectedId}&groupType=${selectedType}`)}>
+            <Button
+              onClick={async () => {
+                if (!session?.data?.accessToken) {
+                  toast({
+                    variant: 'destructive',
+                    description: '게시글을 작성하려면 로그인이 필요합니다.'
+                  })
+                  return
+                }
+
+                if (selectedType === 'study') {
+                  try {
+                    const res = await fetchData(
+                      API_ENDPOINTS.CLIENT.STUDY.IS_JOINED(Number(selectedId)) as ApiEndpoint,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${session.data.accessToken}`
+                        }
+                      }
+                    )
+
+                    if (!res.ok) {
+                      throw new Error('스터디 참여 여부를 확인하는데 실패했습니다.')
+                    }
+
+                    const json = await res.json()
+                    if (!json.data) {
+                      toast({
+                        variant: 'destructive',
+                        description: '스터디에 참여하지 않아 게시글을 작성할 수 없습니다.'
+                      })
+                      return
+                    }
+                  } catch (error) {
+                    console.error('Failed to check study membership:', error)
+                    toast({
+                      variant: 'destructive',
+                      description: '스터디 참여 여부를 확인하는데 실패했습니다.'
+                    })
+                    return
+                  }
+                }
+
+                router.push(`/post/create?id=${selectedId}&groupType=${selectedType}`)
+              }}
+            >
               게시글 작성
             </Button>
           </div>

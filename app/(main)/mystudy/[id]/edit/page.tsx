@@ -1,19 +1,13 @@
 'use client'
 
-import '@uiw/react-md-editor/markdown-editor.css'
-import '@uiw/react-markdown-preview/markdown.css'
-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Clock } from 'lucide-react'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { notFound, redirect, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { MdHelpOutline } from 'react-icons/md'
 import { z } from 'zod'
-
-const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false })
 
 import { HttpStatusCode } from '@/app/api/utils/httpConsts'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -23,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import { formatDateToTime } from '@/components/ui/time-picker-utils'
 import { TimePicker } from '@/components/ui/timepicker'
 import { useToast } from '@/components/ui/use-toast'
@@ -289,119 +284,124 @@ export default function StudyEditPage({ params }: StudyEditProps) {
   }
 
   return (
-    <div className="flex flex-col items-center py-12">
-      <div className="flex w-full flex-col items-center justify-center gap-5">
-        <p className="text-3xl font-semibold lg:text-5xl">스터디 수정</p>
+    <div className="mx-auto">
+      <div className="mb-8 mt-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">스터디 수정</h1>
+        <Button onClick={() => window.history.back()}>뒤로 가기</Button>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 w-full max-w-2xl space-y-8 px-4">
-        {/* 이미지 업로드 */}
-        <div className="space-y-1">
-          <Label>스터디 이미지</Label>
-          <div className="flex justify-start">
-            <div
-              onClick={() => fileRef.current?.click()}
-              className="relative h-48 w-48 cursor-pointer overflow-hidden rounded-lg border-2 border-dashed"
-            >
-              {image ? (
-                <Image src={image} alt="Study" fill className="object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-gray-500">이미지 업로드</span>
-                </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 max-sm:px-3">
+        <div className="flex gap-8">
+          {/* 이미지 업로드 */}
+          <div className="flex flex-col gap-1">
+            <Label>스터디 이미지</Label>
+            <div className="flex items-start gap-4">
+              <div
+                onClick={() => fileRef.current?.click()}
+                className="flex h-52 w-52 cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
+              >
+                {image ? (
+                  <Image src={image} width={208} height={208} alt="Study" className="h-full w-full object-cover" />
+                ) : (
+                  <p className="text-5xl font-light text-slate-300">+</p>
+                )}
+                <input type="file" accept="image/*" className="hidden" ref={fileRef} onChange={handleFileChange} />
+              </div>
+            </div>
+            {errors.imageSrc && <p className="text-sm text-red-500">{errors.imageSrc.message}</p>}
+          </div>
+          <div className="flex flex-col gap-4">
+            {/* 제목 */}
+            <div className="space-y-2">
+              <Label>제목</Label>
+              <Input {...register('title')} placeholder="스터디 제목을 입력해주세요" />
+              {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+            </div>
+
+            {/* 시간 */}
+            <div className="space-y-2">
+              <Label className="flex items-center">
+                시간
+                <Clock className="ml-2 h-4 w-4" />
+              </Label>
+              <div className="flex items-center justify-start gap-2 max-md:gap-4">
+                <TimePicker date={startTime} setDate={onChangeStartTime} />
+                <span>~</span>
+                <TimePicker date={endTime} setDate={onChangeEndTime} />
+              </div>
+              {(errors.startTime || errors.endTime) && (
+                <p className="text-sm text-red-500">{errors.startTime?.message}</p>
               )}
-              <input type="file" accept="image/*" className="hidden" ref={fileRef} onChange={handleFileChange} />
+            </div>
+
+            {/* 요일 */}
+            <div className="space-y-2">
+              <Label>요일</Label>
+              <Controller
+                control={control}
+                name="day"
+                render={({ field: { onChange, value } }) => (
+                  <Tabs value={value} onValueChange={onChange}>
+                    <TabsList>
+                      {dayOptions.map((day) => (
+                        <TabsTrigger key={day} value={day}>
+                          {day}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                )}
+              />
+              {errors.day && <p className="text-sm text-red-500">{errors.day.message}</p>}
             </div>
           </div>
-          {errors.imageSrc && <p className="text-sm text-red-500">{errors.imageSrc.message}</p>}
         </div>
 
-        {/* 제목 */}
-        <div className="space-y-1">
-          <Label>제목</Label>
-          <Input {...register('title')} placeholder="스터디 제목을 입력해주세요" />
-          {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
-        </div>
-
-        {/* 시간 */}
-        <div className="space-y-1">
-          <Label className="flex items-center">
-            시간
-            <Clock className="ml-2 h-4 w-4" />
-          </Label>
-          <div className="flex items-center justify-start gap-2 max-md:gap-4">
-            <TimePicker date={startTime} setDate={onChangeStartTime} />
-            <span>~</span>
-            <TimePicker date={endTime} setDate={onChangeEndTime} />
+        <div className="flex justify-between">
+          {/* 캠퍼스 */}
+          <div className="space-y-2">
+            <Label>캠퍼스</Label>
+            <Controller
+              control={control}
+              name="campus"
+              render={({ field: { onChange, value } }) => (
+                <Tabs value={value} onValueChange={onChange}>
+                  <TabsList>
+                    {campusOptions.map((campus) => (
+                      <TabsTrigger key={campus} value={campus}>
+                        {campus}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              )}
+            />
+            {errors.campus && <p className="text-sm text-red-500">{errors.campus.message}</p>}
           </div>
-          {(errors.startTime || errors.endTime) && <p className="text-sm text-red-500">{errors.startTime?.message}</p>}
-        </div>
 
-        {/* 요일 */}
-        <div className="space-y-1">
-          <Label>요일</Label>
-          <Controller
-            control={control}
-            name="day"
-            render={({ field: { onChange, value } }) => (
-              <Tabs value={value} onValueChange={onChange}>
-                <TabsList>
-                  {dayOptions.map((day) => (
-                    <TabsTrigger key={day} value={day}>
-                      {day}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            )}
-          />
-          {errors.day && <p className="text-sm text-red-500">{errors.day.message}</p>}
+          {/* 난이도 */}
+          <div className="space-y-2">
+            <Label>난이도</Label>
+            <Controller
+              control={control}
+              name="level"
+              render={({ field: { onChange, value } }) => (
+                <Tabs value={value} onValueChange={onChange}>
+                  <TabsList>
+                    {levelOptions.map((level) => (
+                      <TabsTrigger key={level} value={level}>
+                        {level}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              )}
+            />
+            {errors.level && <p className="text-sm text-red-500">{errors.level.message}</p>}
+          </div>
         </div>
-
-        {/* 캠퍼스 */}
-        <div className="space-y-1">
-          <Label>캠퍼스</Label>
-          <Controller
-            control={control}
-            name="campus"
-            render={({ field: { onChange, value } }) => (
-              <Tabs value={value} onValueChange={onChange}>
-                <TabsList>
-                  {campusOptions.map((campus) => (
-                    <TabsTrigger key={campus} value={campus}>
-                      {campus}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            )}
-          />
-          {errors.campus && <p className="text-sm text-red-500">{errors.campus.message}</p>}
-        </div>
-
-        {/* 난이도 */}
-        <div className="space-y-1">
-          <Label>난이도</Label>
-          <Controller
-            control={control}
-            name="level"
-            render={({ field: { onChange, value } }) => (
-              <Tabs value={value} onValueChange={onChange}>
-                <TabsList>
-                  {levelOptions.map((level) => (
-                    <TabsTrigger key={level} value={level}>
-                      {level}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            )}
-          />
-          {errors.level && <p className="text-sm text-red-500">{errors.level.message}</p>}
-        </div>
-
         {/* 스택 */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label>주제 / 기술 스택</Label>
             <Popover>
@@ -464,19 +464,17 @@ export default function StudyEditPage({ params }: StudyEditProps) {
         </div>
 
         {/* 설명 */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           <Label>설명</Label>
-          <div data-color-mode="light">
-            <MDEditor
-              value={description}
-              onChange={(value) => {
-                setDescription(value || '')
-                setValue('description', value || '')
-              }}
-              preview="edit"
-              height={400}
-            />
-          </div>
+          <Textarea
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value)
+              setValue('description', e.target.value)
+            }}
+            placeholder="스터디 설명을 입력해주세요"
+            className="min-h-[200px]"
+          />
           {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
         </div>
 

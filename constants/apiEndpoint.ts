@@ -81,7 +81,19 @@ const JSP_ENDPOINTS = {
       }
     },
     EVENT: {
-      LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod }
+      LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod },
+      JOIN: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/join`,
+        method: 'POST' as HttpMethod
+      }),
+      LEAVE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/leave`,
+        method: 'DELETE' as HttpMethod
+      }),
+      IS_JOINED: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/isJoined`,
+        method: 'GET' as HttpMethod
+      })
     },
     RESERVATION: {
       LIST: (year: number, month: number) => ({

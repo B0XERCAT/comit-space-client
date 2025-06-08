@@ -3,6 +3,19 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
@@ -20,6 +33,7 @@ export default function MyStudy() {
   const [joinedStudies, setJoinedStudies] = useState<StudyWithState[]>([])
   const [createdStudies, setCreatedStudies] = useState<Study[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchStudies = async () => {
@@ -67,6 +81,113 @@ export default function MyStudy() {
     fetchStudies()
   }, [session])
 
+  const handleLeaveStudy = async (studyId: number) => {
+    if (!session?.data?.accessToken) return
+
+    try {
+      const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.LEAVE(studyId) as ApiEndpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('스터디를 목록에서 삭제에 실패했습니다.')
+      }
+
+      // Remove the study from joinedStudies
+      setJoinedStudies((prev) => prev.filter((study) => study.study.id !== studyId))
+
+      toast({
+        description: '스터디를 목록에서 삭제했습니다.'
+      })
+    } catch (error) {
+      console.error('Failed to delete study:', error)
+      toast({
+        variant: 'destructive',
+        description: '스터디를 목록에서 삭제에 실패했습니다.'
+      })
+    }
+  }
+
+  const StudyContent = ({ study, state, type }: { study: Study; state: string | null; type: 'joined' | 'created' }) => (
+    <div className="border-b-solid flex border-b border-b-[#dee2e6] px-0 py-[18px] sm:px-4">
+      <div className="flex-auto">
+        <div className="mb-1 flex-col items-center gap-2 sm:flex sm:flex-row">
+          <h3 className="overflow-hidden whitespace-nowrap text-[16px]/[25px] font-bold text-[#212529] sm:text-[18px]">
+            {study.title}
+          </h3>
+          {state && (
+            <span
+              className={`inline-block whitespace-nowrap rounded-xl px-[7.8px] py-[4.2px] text-center align-baseline text-xs font-bold leading-none sm:px-2 sm:py-1 ${
+                state === 'Wait'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : state === 'Accept'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+              }`}
+            >
+              {state === 'Wait' ? '대기중' : state === 'Accept' ? '승인됨' : '거절됨'}
+            </span>
+          )}
+          {type === 'joined' && state === 'Reject' && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="ml-auto">
+                  삭제
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>스터디를 목록에서 삭제</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    정말로 이 스터디를 목록에서 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleLeaveStudy(study.id)}>확인</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+        <div className="max-h-18 overflow-hidden text-ellipsis whitespace-normal text-left text-[14px] text-[#495057]">
+          {study.description}
+        </div>
+        <div className="mt-2 flex flex-wrap">
+          <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
+            <span className="text-[#3e4042]">{study.campus}</span>
+          </button>
+          <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
+            <span className="text-[#3e4042]">{study.level}</span>
+          </button>
+          {(study.tags ?? []).map((stack, index) => (
+            <button
+              key={index}
+              className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]"
+            >
+              <span className="text-[#3e4042]">{stack}</span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 flex justify-between overflow-auto text-ellipsis whitespace-nowrap text-sm font-normal text-[#868e96]">
+          <div className="max-w-lg flex-auto">
+            <span className="flex-shrink overflow-hidden text-ellipsis whitespace-nowrap"></span>
+            <span>{study.mentor.username}</span>
+            <span> · </span>
+            <span>
+              {study.day} {study.startTime}
+              {study.startTime && '~'}
+              {study.endTime}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   const renderStudyList = (studies: Study[] | StudyWithState[], type: 'joined' | 'created') => {
     if (studies.length === 0) {
       return (
@@ -82,69 +203,13 @@ export default function MyStudy() {
           const study = type === 'joined' ? (studyData as StudyWithState).study : (studyData as Study)
           const state = type === 'joined' ? (studyData as StudyWithState).state : null
 
-          const StudyContent = () => (
-            <div className="border-b-solid flex border-b border-b-[#dee2e6] px-0 py-[18px] sm:px-4">
-              <div className="flex-auto">
-                <div className="mb-1 flex-col items-center gap-2 sm:flex sm:flex-row">
-                  <h3 className="overflow-hidden whitespace-nowrap text-[16px]/[25px] font-bold text-[#212529] sm:text-[18px]">
-                    {study.title}
-                  </h3>
-                  {state && (
-                    <span
-                      className={`inline-block whitespace-nowrap rounded-xl px-[7.8px] py-[4.2px] text-center align-baseline text-xs font-bold leading-none sm:px-2 sm:py-1 ${
-                        state === 'Wait'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : state === 'Accept'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {state === 'Wait' ? '대기중' : state === 'Accept' ? '승인됨' : '거절됨'}
-                    </span>
-                  )}
-                </div>
-                <div className="max-h-18 overflow-hidden text-ellipsis whitespace-normal text-left text-[14px] text-[#495057]">
-                  {study.description}
-                </div>
-                <div className="mt-2 flex flex-wrap">
-                  <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
-                    <span className="text-[#3e4042]">{study.campus}</span>
-                  </button>
-                  <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
-                    <span className="text-[#3e4042]">{study.level}</span>
-                  </button>
-                  {(study.tags ?? []).map((stack, index) => (
-                    <button
-                      key={index}
-                      className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]"
-                    >
-                      <span className="text-[#3e4042]">{stack}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4 flex justify-between overflow-auto text-ellipsis whitespace-nowrap text-sm font-normal text-[#868e96]">
-                  <div className="max-w-lg flex-auto">
-                    <span className="flex-shrink overflow-hidden text-ellipsis whitespace-nowrap"></span>
-                    <span>{study.mentor.username}</span>
-                    <span> · </span>
-                    <span>
-                      {study.day} {study.startTime}
-                      {study.startTime && '~'}
-                      {study.endTime}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-
           return type === 'created' ? (
             <Link href={`/mystudy/${study.id}`} className="cursor-pointer" key={index}>
-              <StudyContent />
+              <StudyContent study={study} state={state} type={type} />
             </Link>
           ) : (
             <div key={index}>
-              <StudyContent />
+              <StudyContent study={study} state={state} type={type} />
             </div>
           )
         })}

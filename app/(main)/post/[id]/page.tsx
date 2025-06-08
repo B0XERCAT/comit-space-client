@@ -1,8 +1,8 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import CommentForm from '@/components/post/CommentForm'
@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
@@ -28,9 +29,11 @@ import { Post } from '@/types'
 export default function PostDetail() {
   const params = useParams()
   const session = useSession()
+  const router = useRouter()
   const { toast } = useToast()
   const [post, setPost] = useState<Post | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const fetchPost = async () => {
     if (!session?.data?.accessToken) {
@@ -96,6 +99,37 @@ export default function PostDetail() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!session?.data?.accessToken || !post) return
+
+    try {
+      const res = await fetchData(API_ENDPOINTS.CLIENT.POST.DELETE(post.id) as ApiEndpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('게시글 삭제에 실패했습니다.')
+      }
+
+      toast({
+        title: '게시글이 삭제되었습니다.',
+        variant: 'default'
+      })
+
+      // Redirect to the post list page
+      router.push(`/post?id=${post.groupId}&groupType=${post.groupType.toLowerCase()}`)
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+      toast({
+        variant: 'destructive',
+        description: '게시글 삭제에 실패했습니다.'
+      })
+    }
+  }
+
   useEffect(() => {
     fetchPost()
   }, [params.id, session])
@@ -116,26 +150,50 @@ export default function PostDetail() {
     )
   }
 
+  const isAuthor = session?.data?.username === post.author.username
+
   return (
     <div className="mx-auto max-w-4xl p-8">
       <div className="rounded-lg bg-white p-8 shadow-sm">
-        {/* Author info */}
-        <div className="mb-6 flex items-center gap-3">
-          {post.author.profileImage ? (
-            <Image
-              src={post.author.profileImage}
-              alt={post.author.username}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-gray-200" />
-          )}
-          <div>
-            <div className="font-medium">{post.author.username}</div>
-            <div className="text-sm text-gray-500">{post.author.position}</div>
+        {/* Author info and actions */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {post.author.profileImage ? (
+              <Image
+                src={post.author.profileImage}
+                alt={post.author.username}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-gray-200" />
+            )}
+            <div>
+              <div className="font-medium">{post.author.username}</div>
+              <div className="text-sm text-gray-500">{post.author.position}</div>
+            </div>
           </div>
+
+          {isAuthor && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => router.push(`/post/${post.id}/edit`)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  <span>수정하기</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-red-600">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>삭제하기</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Post content */}
@@ -215,6 +273,24 @@ export default function PostDetail() {
             )}
           </div>
         </div>
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>게시글 삭제</AlertDialogTitle>
+              <AlertDialogDescription>
+                정말로 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+                삭제
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

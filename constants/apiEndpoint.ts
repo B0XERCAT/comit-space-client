@@ -61,6 +61,14 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/posts/${groupType}/${groupId}`,
         method: 'POST' as HttpMethod
       }),
+      UPDATE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/posts/${id}`,
+        method: 'PUT' as HttpMethod
+      }),
+      DELETE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/posts/${id}`,
+        method: 'DELETE' as HttpMethod
+      }),
       COMMENT: {
         CREATE: (postId: number) => ({
           url: `${baseURL}/${API_PREFIX}/posts/${postId}/comments`,

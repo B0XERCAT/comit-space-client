@@ -10,6 +10,7 @@ import { LuSave } from 'react-icons/lu'
 import { MdOutlineFileUpload } from 'react-icons/md'
 
 import { HttpStatusCode } from '@/app/api/utils/httpConsts'
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -29,27 +30,23 @@ interface StudyDetailProps {
 
 export default function StudyDetailPage({ params }: StudyDetailProps) {
   const session = useSession()
-  if (!session) {
-    redirect(ROUTES.LOGIN.url)
-  }
-  if (session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-
   const { id } = params
   const { toast } = useToast()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const fileHandler = useSupabaseFile({ pathPrefix: `image/study/${id}` })
 
   const [editing, setEditing] = useState<boolean>(false)
   const [study, setStudy] = useState<Study>()
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [image, setImage] = useState<string>('')
 
-  const fileRef = useRef<HTMLInputElement>(null)
   async function handleClick() {
     fileRef?.current?.click()
   }
 
   useEffect(() => {
+    if (!session || session.error) return
+
     fetchData(API_ENDPOINTS.CLIENT.STUDY.RETRIEVE(id), {
       cache: 'no-cache'
     })
@@ -74,13 +71,10 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
           variant: 'destructive'
         })
       })
-  }, [id, toast])
-
-  const fileHandler = useSupabaseFile({ pathPrefix: `image/study/${id}` })
+  }, [id, session, toast])
 
   const handleFileChange = (e: React.ChangeEvent) => {
     const targetFiles = (e.target as HTMLInputElement).files as FileList
-    // 예외 Case: 파일 입력 후 다시 닫을때
     if (targetFiles.length) {
       const selectedFile = URL.createObjectURL(targetFiles[0])
       setImage(selectedFile)
@@ -89,12 +83,14 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   }
 
   async function handleSave(id: number, field: string, value: any) {
+    if (!session?.data?.accessToken) return
+
     const body = { [field]: value }
     const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.UPDATE(id), {
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session!.data!.accessToken}`
+        Authorization: `Bearer ${session.data.accessToken}`
       },
       credentials: 'include'
     })
@@ -110,7 +106,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   }
 
   async function handleImageSave() {
-    if (!imageFile) {
+    if (!imageFile || !session?.data?.accessToken) {
       return
     }
     const file = await fileHandler.upload(imageFile)
@@ -119,7 +115,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
       body: JSON.stringify({ imageSrc: fileUrl }),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session!.data!.accessToken}`
+        Authorization: `Bearer ${session.data.accessToken}`
       },
       credentials: 'include'
     })
@@ -139,9 +135,28 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
     })
   }
 
-  if (!study) {
-    return <div></div>
+  // 세션이 로드되기 전까지는 로딩 상태 표시
+  if (session === null) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
   }
+
+  // 세션 에러가 있을 때만 로그인 페이지로 리다이렉트
+  if (session.error) {
+    redirect(ROUTES.LOGIN.url)
+  }
+
+  if (!study) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
   return (
     <div className="flex w-full flex-col gap-6 py-2 sm:py-12">
       <div className="relative flex w-full items-start gap-3 max-md:flex-col sm:gap-8">

@@ -1,26 +1,30 @@
 'use client'
 
-import './style.css'
+import '@uiw/react-markdown-preview/markdown.css'
 
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { notFound, redirect } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-import EasyEdit, { Types } from 'react-easy-edit'
-import { LuSave } from 'react-icons/lu'
-import { MdOutlineFileUpload } from 'react-icons/md'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { FaSchoolFlag } from 'react-icons/fa6'
+import { IoPersonSharp } from 'react-icons/io5'
+import { MdOutlineSignalCellularAlt } from 'react-icons/md'
+import { RiStackOverflowLine } from 'react-icons/ri'
+
+const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), { ssr: false })
 
 import { HttpStatusCode } from '@/app/api/utils/httpConsts'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import UserHoverCard from '@/components/common/User/HoverCard'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/use-toast'
-import { API_ENDPOINTS } from '@/constants/apiEndpoint'
+import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { ROUTES } from '@/constants/routes'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
-import { useSupabaseFile } from '@/lib/supabase/hooks'
-import { Study } from '@/types'
+import { Study, User } from '@/types'
 
 interface StudyDetailProps {
   params: {
@@ -28,111 +32,119 @@ interface StudyDetailProps {
   }
 }
 
+interface Member extends User {
+  joinState: 'ACCEPT' | 'WAIT' | 'REJECT'
+}
+
 export default function StudyDetailPage({ params }: StudyDetailProps) {
   const session = useSession()
+  const router = useRouter()
   const { id } = params
   const { toast } = useToast()
-  const fileRef = useRef<HTMLInputElement>(null)
-  const fileHandler = useSupabaseFile({ pathPrefix: `image/study/${id}` })
 
-  const [editing, setEditing] = useState<boolean>(false)
   const [study, setStudy] = useState<Study>()
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [image, setImage] = useState<string>('')
-
-  async function handleClick() {
-    fileRef?.current?.click()
-  }
+  const [acceptedMembers, setAcceptedMembers] = useState<Member[]>([])
+  const [waitingMembers, setWaitingMembers] = useState<Member[]>([])
 
   useEffect(() => {
     if (!session || session.error) return
 
-    fetchData(API_ENDPOINTS.CLIENT.STUDY.RETRIEVE(id), {
-      cache: 'no-cache'
-    })
-      .then((res) => {
+    const loadStudy = async () => {
+      try {
+        const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.RETRIEVE(id), {
+          cache: 'no-cache'
+        })
         if (!res.ok) {
           switch (res.status) {
             case HttpStatusCode.NotFound:
-              notFound()
+              router.push(ROUTES.STUDY.index.url)
+              return
             default:
               throw new Error('스터디 정보를 불러오는 중 오류가 발생했습니다.')
           }
         }
-        return res.json().then((json) => {
-          setStudy(json.data)
-          setImage(json.data.imageSrc)
-        })
-      })
-      .catch(() => {
+        const json = await res.json()
+        setStudy(json.data)
+      } catch (error) {
         toast({
           title: '스터디 정보 불러오기 실패',
           description: '스터디 정보를 불러오는 중 오류가 발생했습니다.',
           variant: 'destructive'
         })
-      })
-  }, [id, session, toast])
-
-  const handleFileChange = (e: React.ChangeEvent) => {
-    const targetFiles = (e.target as HTMLInputElement).files as FileList
-    if (targetFiles.length) {
-      const selectedFile = URL.createObjectURL(targetFiles[0])
-      setImage(selectedFile)
-      setImageFile(targetFiles[0])
+      }
     }
-  }
 
-  async function handleSave(id: number, field: string, value: any) {
+    const loadMembers = async () => {
+      try {
+        const [acceptRes, waitRes] = await Promise.all([
+          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'ACCEPT') as ApiEndpoint, {
+            headers: {
+              Authorization: `Bearer ${session.data.accessToken}`
+            }
+          }),
+          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'WAIT') as ApiEndpoint, {
+            headers: {
+              Authorization: `Bearer ${session.data.accessToken}`
+            }
+          })
+        ])
+
+        if (acceptRes.ok) {
+          const json = await acceptRes.json()
+          setAcceptedMembers(json.data)
+        }
+
+        if (waitRes.ok) {
+          const json = await waitRes.json()
+          setWaitingMembers(json.data)
+        }
+      } catch (error) {
+        console.error('Failed to load members:', error)
+      }
+    }
+
+    loadStudy()
+    loadMembers()
+  }, [id, session, router, toast])
+
+  const handleMemberStateUpdate = async (userId: number, state: 'ACCEPT' | 'REJECT') => {
     if (!session?.data?.accessToken) return
 
-    const body = { [field]: value }
-    const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.UPDATE(id), {
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.data.accessToken}`
-      },
-      credentials: 'include'
-    })
-    if (!res.ok) {
-      throw new Error('스터디 정보를 수정하는 중 오류가 발생했습니다.')
-    }
-    const data = (await res.json()).data
-    setStudy(data)
-    toast({
-      title: '스터디 수정 완료',
-      description: '스터디 내용이 성공적으로 수정되었습니다!'
-    })
-  }
+    try {
+      const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.UPDATE_MEMBER_STATE(id, userId) as ApiEndpoint, {
+        method: 'PATCH',
+        body: JSON.stringify({ joinState: state }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
 
-  async function handleImageSave() {
-    if (!imageFile || !session?.data?.accessToken) {
-      return
-    }
-    const file = await fileHandler.upload(imageFile)
-    const fileUrl = file.supabaseFileData.url
-    const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.UPDATE(id), {
-      body: JSON.stringify({ imageSrc: fileUrl }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.data.accessToken}`
-      },
-      credentials: 'include'
-    })
-    if (!res.ok) {
-      await file.delete()
+      if (!res.ok) {
+        throw new Error('멤버 상태 업데이트에 실패했습니다.')
+      }
+
+      // Update local state
+      if (state === 'ACCEPT') {
+        const member = waitingMembers.find((m) => m.id === userId)
+        if (member) {
+          setWaitingMembers(waitingMembers.filter((m) => m.id !== userId))
+          setAcceptedMembers([...acceptedMembers, { ...member, joinState: 'ACCEPT' }])
+        }
+      } else {
+        setWaitingMembers(waitingMembers.filter((m) => m.id !== userId))
+      }
+
       toast({
-        title: '이미지 수정 실패',
-        description: '이미지 수정 하는 도중 오류가 발생했습니다.',
-        variant: 'destructive'
+        description: state === 'ACCEPT' ? '스터디 참여가 승인되었습니다.' : '스터디 참여가 거절되었습니다.'
+      })
+    } catch (error) {
+      console.error('Failed to update member state:', error)
+      toast({
+        variant: 'destructive',
+        description: '멤버 상태 업데이트에 실패했습니다.'
       })
     }
-    const data = (await res.json()).data
-    setStudy(data)
-    toast({
-      title: '스터디 이미지 수정 완료',
-      description: '스터디 이미지가 성공적으로 수정되었습니다!'
-    })
   }
 
   // 세션이 로드되기 전까지는 로딩 상태 표시
@@ -146,7 +158,8 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
 
   // 세션 에러가 있을 때만 로그인 페이지로 리다이렉트
   if (session.error) {
-    redirect(ROUTES.LOGIN.url)
+    router.push(ROUTES.LOGIN.url)
+    return null
   }
 
   if (!study) {
@@ -158,272 +171,142 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6 py-2 sm:py-12">
-      <div className="relative flex w-full items-start gap-3 max-md:flex-col sm:gap-8">
-        <div className="mx-auto mb-3 flex flex-row items-center gap-2 sm:mb-0 sm:flex-col">
-          <div className="flex flex-col items-center gap-1">
-            <Button
-              type="button"
-              variant={'outline'}
-              onClick={handleClick}
-              className="flex h-52 w-52 items-center justify-center overflow-hidden rounded-lg border border-slate-300 sm:h-72 sm:w-72"
-            >
-              {!image ? (
-                <p className="text-5xl font-light text-slate-300">+</p>
-              ) : (
-                <Image src={image} width={128} height={128} alt={image} className="h-full w-full object-cover" />
-              )}
-            </Button>
-            <Input className="hidden" accept="image/*" type="file" ref={fileRef} onChange={handleFileChange} />
-          </div>
-          <div className="flex-col items-center pl-3 font-normal sm:mt-2">
-            <div onClick={handleClick} className="flex cursor-pointer items-center hover:opacity-70 sm:inline-flex">
-              <MdOutlineFileUpload className="mr-1 inline h-5 w-5" />
-              <span className="">재업로드</span>
-            </div>
-            <div
-              onClick={handleImageSave}
-              className="mt-2 flex cursor-pointer items-center hover:opacity-70 sm:ml-5 sm:mt-0 sm:inline-flex"
-            >
-              <LuSave className="mr-1 inline h-5 w-5" />
-              <span>이미지 저장</span>
-            </div>
-          </div>
-        </div>
-        <span className="mx-2 rounded-xl bg-purple-600 px-3 py-1 text-sm font-bold text-white sm:absolute sm:right-2 sm:mx-0 sm:mt-8">
-          스터디장
-        </span>
-        <div className="mx-3 flex w-full flex-col gap-2 text-[17px] font-medium sm:mx-0 sm:mt-8">
-          <h3 className="flex items-start gap-2">
-            <span className="font-semibold">제목:</span>
-            <EasyEdit
-              type={Types.TEXT}
-              value={study.title}
-              onSave={(val) => handleSave(id, 'title', val)}
-              saveButtonLabel={
-                <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">수정</span>
-              }
-              cancelButtonLabel={
-                <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                  취소
-                </span>
-              }
-            />
-          </h3>
-
-          <h3 className="flex items-start gap-2">
-            <span className="font-semibold">캠퍼스:</span>
-            {
-              <EasyEdit
-                type="select"
-                options={[
-                  { label: '공통', value: '공통' },
-                  { label: '율전', value: '율전' },
-                  { label: '명륜', value: '명륜' }
-                ]}
-                onSave={(val) => handleSave(id, 'campus', val)}
-                placeholder={study.campus}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-              />
-            }
-          </h3>
-          <h3 className="flex items-start gap-2">
-            <span className="font-semibold">난이도:</span>
-            {
-              <EasyEdit
-                type="select"
-                options={[
-                  { label: '초급', value: '초급' },
-                  { label: '중급', value: '중급' },
-                  { label: '고급', value: '고급' }
-                ]}
-                onSave={(val) => handleSave(id, 'level', val)}
-                placeholder={study.level}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-              />
-            }
-          </h3>
-
-          <div>
-            <h3 className="flex items-start gap-2">
-              <span className="flex font-semibold">관련 스택:</span>
-              <EasyEdit
-                type={Types.TEXT}
-                value={study.tags.join(', ')}
-                onSave={(val) => {
-                  const tags = val.split(',').map((stack: string) => stack.trim())
-                  handleSave(id, 'tags', tags)
-                }}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-                instructions={<p className="text-sm text-gray-400">스택 간에는 쉼표(,)를 사용해 구분해 주세요.</p>}
-              />
-            </h3>
-          </div>
-
-          <h3 className="flex items-start">
-            <span className="mr-2 font-semibold">요일 / 시간:</span>
-            <div className="flex gap-2">
-              <EasyEdit
-                type="select"
-                options={[
-                  { label: '월요일', value: '월요일' },
-                  { label: '화요일', value: '화요일' },
-                  { label: '수요일', value: '수요일' },
-                  { label: '목요일', value: '목요일' },
-                  { label: '금요일', value: '금요일' },
-                  { label: '토요일', value: '토요일' },
-                  { label: '일요일', value: '일요일' }
-                ]}
-                onSave={(val) => handleSave(id, 'day', val)}
-                placeholder={`${study.day}요일`}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-              />
-              <EasyEdit
-                type={Types.TIME}
-                value={study.startTime}
-                onSave={(val) => handleSave(id, 'startTime', val)}
-                placeholder="Select time"
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-              />
-              <span>~</span>
-              <EasyEdit
-                type={Types.TIME}
-                value={study.endTime}
-                onSave={(val) => handleSave(id, 'endTime', val)}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-                placeholder="Select time"
-              />
-            </div>
-          </h3>
-
-          <h3 className="flex items-start">
-            <span className="mr-2 font-semibold">모집 여부:</span>
-            <div className="flex gap-2">
-              <EasyEdit
-                type="select"
-                options={[
-                  { label: '모집 중', value: '모집 중' },
-                  { label: '모집 마감', value: '모집 마감' }
-                ]}
-                onSave={(val) => handleSave(id, 'isRecruiting', val === '모집 중')}
-                placeholder={study.isRecruiting ? '모집 중' : '모집 마감'}
-                saveButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-green-500 hover:opacity-70">
-                    수정
-                  </span>
-                }
-                cancelButtonLabel={
-                  <span className="rounded-xl border-2 px-2 py-1 text-[15px] text-destructive hover:opacity-70">
-                    취소
-                  </span>
-                }
-              />
-            </div>
-          </h3>
-
-          <h3 className="flex items-start opacity-55">(클릭하여 세부 정보 수정 가능)</h3>
-        </div>
+    <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">{study.title}</h1>
+        <Button onClick={() => router.push(`/mystudy/${id}/edit`)}>스터디 수정</Button>
       </div>
-      <div className="flex w-full flex-col gap-3">
-        <span className="mx-3 text-[18px] font-bold sm:mx-0">스터디 설명</span>
-        {study.description && (
-          <Textarea
-            name="study-description"
-            id="description"
-            className="h-12 w-full px-2 py-1 text-[16px] sm:h-32"
-            disabled={!editing}
-            autoFocus={editing}
-            value={study.description}
-            onChange={(e) => setStudy((prev: any) => ({ ...prev, description: e.target.value }))}
-          />
-        )}
-        {!editing ? (
-          <div className="mx-auto">
-            <Button
-              className="mt-2 px-2 py-[1px] text-[15px] font-semibold sm:mt-3 sm:text-[16px]"
-              onClick={() => {
-                setEditing(true)
-              }}
-            >
-              설명 수정하기
-            </Button>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>스터디 정보</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-6">
+            {/* Basic Info */}
+            <div className="flex items-start gap-6">
+              <Image
+                src={study.imageSrc || '/empty-300x240.jpg'}
+                alt={study.title}
+                width={200}
+                height={200}
+                className="rounded-lg object-cover"
+              />
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <IoPersonSharp />
+                    <UserHoverCard user={study.mentor} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MdOutlineSignalCellularAlt />
+                    {study.level}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaSchoolFlag />
+                    {study.campus}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RiStackOverflowLine />
+                  {study.tags?.join(', ') || '태그 없음'}
+                </div>
+                <div>
+                  {!study.day ? null : !study.startTime || !study.endTime ? (
+                    <div className="flex gap-3 text-lg text-gray-600">
+                      {study.day}요일 <span className="text-base text-red-500">(시간 미정)</span>
+                    </div>
+                  ) : (
+                    <div className="text-lg text-gray-600">
+                      {study.day} {study.startTime.substring(0, 5)} ~ {study.endTime.substring(0, 5)}
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                  {study.isRecruiting ? '모집 중' : '모집 마감'}
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="prose max-w-none">
+              <div data-color-mode="light">
+                <MarkdownPreview source={study.description} />
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="mx-auto mt-2 flex gap-2 sm:mt-3">
-            <Button
-              className="rounded-lg px-4 py-[1px] text-[15px] font-semibold sm:text-[16px]"
-              onClick={() => {
-                setEditing(false)
-                handleSave(id, 'description', study.description)
-              }}
-            >
-              제출
-            </Button>
-            <Button
-              className="rounded-lg bg-slate-400 px-4 py-[1px] text-[15px] font-semibold hover:opacity-55 sm:text-[16px]"
-              onClick={() => {
-                setEditing(false)
-              }}
-            >
-              취소
-            </Button>
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>멤버 관리</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="accepted">
+            <TabsList>
+              <TabsTrigger value="accepted">참여 중인 멤버 ({acceptedMembers.length})</TabsTrigger>
+              <TabsTrigger value="waiting">대기 중인 멤버 ({waitingMembers.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="accepted" className="mt-4">
+              <div className="space-y-4">
+                {acceptedMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="flex items-center gap-4">
+                      {member.profileImage && (
+                        <Image
+                          src={member.profileImage}
+                          alt={member.username}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{member.username}</p>
+                        <p className="text-sm text-gray-500">{member.position}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {acceptedMembers.length === 0 && (
+                  <p className="text-center text-gray-500">참여 중인 멤버가 없습니다.</p>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="waiting" className="mt-4">
+              <div className="space-y-4">
+                {waitingMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="flex items-center gap-4">
+                      {member.profileImage && (
+                        <Image
+                          src={member.profileImage}
+                          alt={member.username}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{member.username}</p>
+                        <p className="text-sm text-gray-500">{member.position}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleMemberStateUpdate(member.id, 'ACCEPT')}>승인</Button>
+                      <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'REJECT')}>
+                        거절
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {waitingMembers.length === 0 && <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -57,6 +57,14 @@ const JSP_ENDPOINTS = {
       LEAVE: (id: number) => ({
         url: `${baseURL}/${API_PREFIX}/studies/${id}/leave`,
         method: 'DELETE' as HttpMethod
+      }),
+      MEMBERS: (id: number, state: 'ACCEPT' | 'WAIT') => ({
+        url: `${baseURL}/${API_PREFIX}/studies/${id}/members?state=${state}`,
+        method: 'GET' as HttpMethod
+      }),
+      UPDATE_MEMBER_STATE: (studyId: number, userId: number) => ({
+        url: `${baseURL}/${API_PREFIX}/studies/${studyId}/${userId}`,
+        method: 'PATCH' as HttpMethod
       })
     },
     POST: {

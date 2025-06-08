@@ -58,7 +58,7 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/studies/${id}/leave`,
         method: 'DELETE' as HttpMethod
       }),
-      MEMBERS: (id: number, state: 'Accept' | 'Wait') => ({
+      MEMBERS: (id: number, state: 'Accept' | 'Wait' | 'Reject') => ({
         url: `${baseURL}/${API_PREFIX}/studies/${id}/members?state=${state}`,
         method: 'GET' as HttpMethod
       }),

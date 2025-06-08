@@ -45,6 +45,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   const [study, setStudy] = useState<Study>()
   const [acceptedMembers, setAcceptedMembers] = useState<Member[]>([])
   const [waitingMembers, setWaitingMembers] = useState<Member[]>([])
+  const [rejectedMembers, setRejectedMembers] = useState<Member[]>([])
 
   useEffect(() => {
     if (!session || session.error) return
@@ -76,13 +77,18 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
 
     const loadMembers = async () => {
       try {
-        const [acceptRes, waitRes] = await Promise.all([
+        const [acceptRes, waitRes, rejectRes] = await Promise.all([
           fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'Accept') as ApiEndpoint, {
             headers: {
               Authorization: `Bearer ${session.data.accessToken}`
             }
           }),
           fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'Wait') as ApiEndpoint, {
+            headers: {
+              Authorization: `Bearer ${session.data.accessToken}`
+            }
+          }),
+          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'Reject') as ApiEndpoint, {
             headers: {
               Authorization: `Bearer ${session.data.accessToken}`
             }
@@ -97,6 +103,11 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
         if (waitRes.ok) {
           const json = await waitRes.json()
           setWaitingMembers(json.data)
+        }
+
+        if (rejectRes.ok) {
+          const json = await rejectRes.json()
+          setRejectedMembers(json.data)
         }
       } catch (error) {
         console.error('Failed to load members:', error)
@@ -247,6 +258,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
             <TabsList>
               <TabsTrigger value="accepted">참여 중인 멤버 ({acceptedMembers.length})</TabsTrigger>
               <TabsTrigger value="waiting">대기 중인 멤버 ({waitingMembers.length})</TabsTrigger>
+              <TabsTrigger value="rejected">거절된 멤버 ({rejectedMembers.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="accepted" className="mt-4">
               <div className="space-y-4">
@@ -293,7 +305,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
                         <p className="text-sm text-gray-500">{member.position}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
                       <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
                         거절
@@ -302,6 +314,30 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
                   </div>
                 ))}
                 {waitingMembers.length === 0 && <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>}
+              </div>
+            </TabsContent>
+            <TabsContent value="rejected" className="mt-4">
+              <div className="space-y-4">
+                {rejectedMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="flex items-center gap-4">
+                      {member.profileImage && (
+                        <Image
+                          src={member.profileImage}
+                          alt={member.username}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{member.username}</p>
+                        <p className="text-sm text-gray-500">{member.position}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {rejectedMembers.length === 0 && <p className="text-center text-gray-500">거절된 멤버가 없습니다.</p>}
               </div>
             </TabsContent>
           </Tabs>

@@ -49,6 +49,14 @@ const JSP_ENDPOINTS = {
       IS_JOINED: (id: number) => ({
         url: `${baseURL}/${API_PREFIX}/studies/${id}/isJoined`,
         method: 'GET' as HttpMethod
+      }),
+      JOIN: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/studies/${id}/join`,
+        method: 'POST' as HttpMethod
+      }),
+      LEAVE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/studies/${id}/leave`,
+        method: 'DELETE' as HttpMethod
       })
     },
     POST: {

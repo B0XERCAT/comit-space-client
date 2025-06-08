@@ -69,7 +69,11 @@ export default function MyStudy() {
 
   const renderStudyList = (studies: Study[] | StudyWithState[], type: 'joined' | 'created') => {
     if (studies.length === 0) {
-      return null
+      return (
+        <div className="flex h-40 items-center justify-center">
+          <p className="text-gray-500">표시할 스터디가 없습니다.</p>
+        </div>
+      )
     }
 
     return (
@@ -78,70 +82,70 @@ export default function MyStudy() {
           const study = type === 'joined' ? (studyData as StudyWithState).study : (studyData as Study)
           const state = type === 'joined' ? (studyData as StudyWithState).state : null
 
-          return (
-            <Link href={`/mystudy/${study.id}`} className="cursor-pointer" key={index}>
-              <div className="border-b-solid flex border-b border-b-[#dee2e6] px-0 py-[18px] sm:px-4">
-                <div className="flex-auto">
-                  <div className="mb-1 flex-col items-center sm:flex sm:flex-row">
-                    <div className="mb-2 mr-2 flex items-center gap-2 sm:mb-0">
-                      <span className="inline-block whitespace-nowrap rounded-xl bg-purple-600 px-[7.8px] py-[4.2px] text-center align-baseline text-xs font-bold leading-none text-white sm:px-2 sm:py-1">
-                        {type === 'created' ? '스터디장' : '스터디원'}
-                      </span>
-                      {state && (
-                        <span
-                          className={`inline-block whitespace-nowrap rounded-xl px-[7.8px] py-[4.2px] text-center align-baseline text-xs font-bold leading-none sm:px-2 sm:py-1 ${
-                            state === 'Wait'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : state === 'Accept'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {state === 'Wait' ? '대기중' : state === 'Accept' ? '승인됨' : '거절됨'}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="flex-1 overflow-hidden whitespace-nowrap text-[16px]/[25px] font-bold text-[#212529] sm:text-[18px]">
-                      {study.title}
-                    </h3>
-                  </div>
-                  <div className="max-h-18 overflow-hidden text-ellipsis whitespace-normal text-left text-[14px] text-[#495057]">
-                    {study.description}
-                  </div>
-                  <div className="mt-2 flex flex-wrap">
-                    <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
-                      <span className="text-[#3e4042]">{study.campus}</span>
+          const StudyContent = () => (
+            <div className="border-b-solid flex border-b border-b-[#dee2e6] px-0 py-[18px] sm:px-4">
+              <div className="flex-auto">
+                <div className="mb-1 flex-col items-center gap-2 sm:flex sm:flex-row">
+                  <h3 className="overflow-hidden whitespace-nowrap text-[16px]/[25px] font-bold text-[#212529] sm:text-[18px]">
+                    {study.title}
+                  </h3>
+                  {state && (
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-xl px-[7.8px] py-[4.2px] text-center align-baseline text-xs font-bold leading-none sm:px-2 sm:py-1 ${
+                        state === 'Wait'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : state === 'Accept'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {state === 'Wait' ? '대기중' : state === 'Accept' ? '승인됨' : '거절됨'}
+                    </span>
+                  )}
+                </div>
+                <div className="max-h-18 overflow-hidden text-ellipsis whitespace-normal text-left text-[14px] text-[#495057]">
+                  {study.description}
+                </div>
+                <div className="mt-2 flex flex-wrap">
+                  <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
+                    <span className="text-[#3e4042]">{study.campus}</span>
+                  </button>
+                  <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
+                    <span className="text-[#3e4042]">{study.level}</span>
+                  </button>
+                  {(study.tags ?? []).map((stack, index) => (
+                    <button
+                      key={index}
+                      className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]"
+                    >
+                      <span className="text-[#3e4042]">{stack}</span>
                     </button>
-                    <button className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]">
-                      <span className="text-[#3e4042]">{study.level}</span>
-                    </button>
-                    {(study.tags ?? []).map((stack, index) => (
-                      <button
-                        key={index}
-                        className="m-0 mb-[5px] mr-2 flex h-[26px] w-fit items-center whitespace-nowrap rounded border-none bg-[#eff3fa] px-2 py-1 text-[13px] leading-[1.38rem]"
-                      >
-                        <span className="text-[#3e4042]">{stack}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex justify-between overflow-auto text-ellipsis whitespace-nowrap text-sm font-normal text-[#868e96]">
-                    <div className="max-w-lg flex-auto">
-                      <span className="flex-shrink overflow-hidden text-ellipsis whitespace-nowrap"></span>
-                      {study.mentor?.username && (
-                        <>
-                          <span>{study.mentor.username}</span>
-                          <span> · </span>
-                        </>
-                      )}
-                      <span>
-                        {study.day} {study.startTime && `${study.startTime}${study.endTime ? '~' + study.endTime : ''}`}
-                      </span>
-                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex justify-between overflow-auto text-ellipsis whitespace-nowrap text-sm font-normal text-[#868e96]">
+                  <div className="max-w-lg flex-auto">
+                    <span className="flex-shrink overflow-hidden text-ellipsis whitespace-nowrap"></span>
+                    <span>{study.mentor.username}</span>
+                    <span> · </span>
+                    <span>
+                      {study.day} {study.startTime}
+                      {study.startTime && '~'}
+                      {study.endTime}
+                    </span>
                   </div>
                 </div>
               </div>
+            </div>
+          )
+
+          return type === 'created' ? (
+            <Link href={`/mystudy/${study.id}`} className="cursor-pointer" key={index}>
+              <StudyContent />
             </Link>
+          ) : (
+            <div key={index}>
+              <StudyContent />
+            </div>
           )
         })}
       </div>

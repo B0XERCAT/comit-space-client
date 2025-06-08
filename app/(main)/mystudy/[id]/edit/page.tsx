@@ -284,33 +284,33 @@ export default function StudyEditPage({ params }: StudyEditProps) {
   }
 
   return (
-    <div className="mx-auto">
-      <div className="mb-8 mt-4 flex items-center justify-between">
+    <div className="mx-auto max-w-7xl space-y-8 p-6">
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="text-3xl font-bold">스터디 수정</h1>
         <Button onClick={() => window.history.back()}>뒤로 가기</Button>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 max-sm:px-3">
-        <div className="flex gap-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+        <div className="grid grid-cols-[300px_1fr] gap-8">
           {/* 이미지 업로드 */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-4">
             <Label>스터디 이미지</Label>
-            <div className="flex items-start gap-4">
-              <div
-                onClick={() => fileRef.current?.click()}
-                className="flex h-52 w-52 cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
-              >
-                {image ? (
-                  <Image src={image} width={208} height={208} alt="Study" className="h-full w-full object-cover" />
-                ) : (
-                  <p className="text-5xl font-light text-slate-300">+</p>
-                )}
-                <input type="file" accept="image/*" className="hidden" ref={fileRef} onChange={handleFileChange} />
-              </div>
+            <div
+              onClick={() => fileRef.current?.click()}
+              className="flex h-[300px] w-[300px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
+            >
+              {image ? (
+                <Image src={image} width={300} height={300} alt="Study" className="h-full w-full object-cover" />
+              ) : (
+                <p className="text-5xl font-light text-slate-300">+</p>
+              )}
+              <input type="file" accept="image/*" className="hidden" ref={fileRef} onChange={handleFileChange} />
             </div>
             {errors.imageSrc && <p className="text-sm text-red-500">{errors.imageSrc.message}</p>}
           </div>
-          <div className="flex flex-col gap-4">
+
+          {/* 오른쪽 컬럼 */}
+          <div className="flex flex-col gap-6">
             {/* 제목 */}
             <div className="space-y-2">
               <Label>제목</Label>
@@ -357,7 +357,8 @@ export default function StudyEditPage({ params }: StudyEditProps) {
           </div>
         </div>
 
-        <div className="flex justify-between">
+        {/* 캠퍼스, 난이도 */}
+        <div className="grid grid-cols-2 gap-8">
           {/* 캠퍼스 */}
           <div className="space-y-2">
             <Label>캠퍼스</Label>
@@ -366,9 +367,9 @@ export default function StudyEditPage({ params }: StudyEditProps) {
               name="campus"
               render={({ field: { onChange, value } }) => (
                 <Tabs value={value} onValueChange={onChange}>
-                  <TabsList>
+                  <TabsList className="w-full">
                     {campusOptions.map((campus) => (
-                      <TabsTrigger key={campus} value={campus}>
+                      <TabsTrigger key={campus} value={campus} className="flex-1">
                         {campus}
                       </TabsTrigger>
                     ))}
@@ -387,9 +388,9 @@ export default function StudyEditPage({ params }: StudyEditProps) {
               name="level"
               render={({ field: { onChange, value } }) => (
                 <Tabs value={value} onValueChange={onChange}>
-                  <TabsList>
+                  <TabsList className="w-full">
                     {levelOptions.map((level) => (
-                      <TabsTrigger key={level} value={level}>
+                      <TabsTrigger key={level} value={level} className="flex-1">
                         {level}
                       </TabsTrigger>
                     ))}
@@ -400,8 +401,9 @@ export default function StudyEditPage({ params }: StudyEditProps) {
             {errors.level && <p className="text-sm text-red-500">{errors.level.message}</p>}
           </div>
         </div>
+
         {/* 스택 */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Label>주제 / 기술 스택</Label>
             <Popover>
@@ -421,13 +423,12 @@ export default function StudyEditPage({ params }: StudyEditProps) {
           {stackError && <p className="text-sm text-red-500">{stackError}</p>}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
-              <div className="relative">
+              <div className="relative w-[400px]">
                 <Input
                   placeholder="주제를 입력해주세요"
                   value={currentTag}
                   onChange={handleTagChange}
                   onKeyUp={handleTagAdd}
-                  className="w-60"
                 />
                 <Button
                   type="button"
@@ -473,7 +474,7 @@ export default function StudyEditPage({ params }: StudyEditProps) {
               setValue('description', e.target.value)
             }}
             placeholder="스터디 설명을 입력해주세요"
-            className="min-h-[200px]"
+            className="min-h-[300px]"
           />
           {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
         </div>

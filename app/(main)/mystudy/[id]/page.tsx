@@ -33,7 +33,7 @@ interface StudyDetailProps {
 }
 
 interface Member extends User {
-  joinState: 'ACCEPT' | 'WAIT' | 'REJECT'
+  joinState: 'Accept' | 'Wait' | 'Reject'
 }
 
 export default function StudyDetailPage({ params }: StudyDetailProps) {
@@ -77,12 +77,12 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
     const loadMembers = async () => {
       try {
         const [acceptRes, waitRes] = await Promise.all([
-          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'ACCEPT') as ApiEndpoint, {
+          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'Accept') as ApiEndpoint, {
             headers: {
               Authorization: `Bearer ${session.data.accessToken}`
             }
           }),
-          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'WAIT') as ApiEndpoint, {
+          fetchData(API_ENDPOINTS.CLIENT.STUDY.MEMBERS(id, 'Wait') as ApiEndpoint, {
             headers: {
               Authorization: `Bearer ${session.data.accessToken}`
             }
@@ -107,7 +107,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
     loadMembers()
   }, [id, session, router, toast])
 
-  const handleMemberStateUpdate = async (userId: number, state: 'ACCEPT' | 'REJECT') => {
+  const handleMemberStateUpdate = async (userId: number, state: 'Accept' | 'Reject') => {
     if (!session?.data?.accessToken) return
 
     try {
@@ -125,18 +125,18 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
       }
 
       // Update local state
-      if (state === 'ACCEPT') {
+      if (state === 'Accept') {
         const member = waitingMembers.find((m) => m.id === userId)
         if (member) {
           setWaitingMembers(waitingMembers.filter((m) => m.id !== userId))
-          setAcceptedMembers([...acceptedMembers, { ...member, joinState: 'ACCEPT' }])
+          setAcceptedMembers([...acceptedMembers, { ...member, joinState: 'Accept' }])
         }
       } else {
         setWaitingMembers(waitingMembers.filter((m) => m.id !== userId))
       }
 
       toast({
-        description: state === 'ACCEPT' ? '스터디 참여가 승인되었습니다.' : '스터디 참여가 거절되었습니다.'
+        description: state === 'Accept' ? '스터디 참여가 승인되었습니다.' : '스터디 참여가 거절되었습니다.'
       })
     } catch (error) {
       console.error('Failed to update member state:', error)
@@ -171,7 +171,7 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
+    <div className="max-w-7xl space-y-8 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{study.title}</h1>
         <Button onClick={() => router.push(`/mystudy/${id}/edit`)}>스터디 수정</Button>
@@ -294,8 +294,8 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleMemberStateUpdate(member.id, 'ACCEPT')}>승인</Button>
-                      <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'REJECT')}>
+                      <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
+                      <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
                         거절
                       </Button>
                     </div>

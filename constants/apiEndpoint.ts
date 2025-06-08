@@ -67,6 +67,32 @@ const JSP_ENDPOINTS = {
         method: 'PATCH' as HttpMethod
       })
     },
+    EVENT: {
+      CREATE: { url: `${baseURL}/${API_PREFIX}/events`, method: 'POST' as HttpMethod },
+      RETRIEVE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/events/${id}`, method: 'GET' as HttpMethod }),
+      LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod },
+      UPDATE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/events/${id}`, method: 'PATCH' as HttpMethod }),
+      IS_JOINED: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/isJoined`,
+        method: 'GET' as HttpMethod
+      }),
+      JOIN: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/join`,
+        method: 'POST' as HttpMethod
+      }),
+      LEAVE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/leave`,
+        method: 'DELETE' as HttpMethod
+      }),
+      MEMBERS: (id: number, state: 'Accept' | 'Wait' | 'Reject') => ({
+        url: `${baseURL}/${API_PREFIX}/events/${id}/members?state=${state}`,
+        method: 'GET' as HttpMethod
+      }),
+      UPDATE_MEMBER_STATE: (eventId: number, userId: number) => ({
+        url: `${baseURL}/${API_PREFIX}/events/${eventId}/${userId}`,
+        method: 'PATCH' as HttpMethod
+      })
+    },
     POST: {
       LIST: (groupType: 'STUDY' | 'EVENT') => ({
         url: `${baseURL}/${API_PREFIX}/posts?groupType=${groupType}`,
@@ -96,21 +122,6 @@ const JSP_ENDPOINTS = {
         })
       }
     },
-    EVENT: {
-      LIST: { url: `${baseURL}/${API_PREFIX}/events`, method: 'GET' as HttpMethod },
-      JOIN: (id: number) => ({
-        url: `${baseURL}/${API_PREFIX}/events/${id}/join`,
-        method: 'POST' as HttpMethod
-      }),
-      LEAVE: (id: number) => ({
-        url: `${baseURL}/${API_PREFIX}/events/${id}/leave`,
-        method: 'DELETE' as HttpMethod
-      }),
-      IS_JOINED: (id: number) => ({
-        url: `${baseURL}/${API_PREFIX}/events/${id}/isJoined`,
-        method: 'GET' as HttpMethod
-      })
-    },
     RESERVATION: {
       LIST: (year: number, month: number) => ({
         url: `${baseURL}/${API_PREFIX}/reservations?year=${year}&month=${month}`,
@@ -132,7 +143,9 @@ const JSP_ENDPOINTS = {
       UPDATE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'PATCH' as HttpMethod },
       DELETE: { url: `${baseURL}/${API_PREFIX}/profile`, method: 'DELETE' as HttpMethod },
       CREATED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/created-studies`, method: 'GET' as HttpMethod },
-      JOINED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/joined-studies`, method: 'GET' as HttpMethod }
+      JOINED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/joined-studies`, method: 'GET' as HttpMethod },
+      CREATED_EVENT: { url: `${baseURL}/${API_PREFIX}/profile/created-events`, method: 'GET' as HttpMethod },
+      JOINED_EVENT: { url: `${baseURL}/${API_PREFIX}/profile/joined-events`, method: 'GET' as HttpMethod }
     }
   },
   AUTH: {
@@ -141,6 +154,6 @@ const JSP_ENDPOINTS = {
     REISSUE: { url: `${baseURL}/${API_PREFIX}/reissue`, method: 'POST' as HttpMethod },
     SIGNUP: { url: `${baseURL}/${API_PREFIX}/join`, method: 'POST' as HttpMethod }
   }
-}
+} as const
 
 export const API_ENDPOINTS = JSP_ENDPOINTS

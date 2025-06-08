@@ -40,17 +40,20 @@ export type Study = {
 export interface Event {
   id: number
   title: string
-  imageSrc: string
+  description: string
   startDate: string
   endDate: string
   startTime: string
   endTime: string
   location: string
+  imageSrc: string
   tags: string[]
-  description: string
   isRecruiting: boolean
   semester: string
   year: number
+  organizer?: User
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type ReservationStatus = 'WAIT' | 'ACCEPT' | 'DECLINE'

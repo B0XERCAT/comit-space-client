@@ -8,6 +8,7 @@ import { CiSettings } from 'react-icons/ci'
 import { HiOutlineUserCircle } from 'react-icons/hi2'
 import { IoIosLogOut } from 'react-icons/io'
 import { IoChevronDownOutline } from 'react-icons/io5'
+import { MdOutlineEventNote } from 'react-icons/md'
 import { PiBooksLight } from 'react-icons/pi'
 
 import { Button } from '@/components/ui/button'
@@ -78,6 +79,9 @@ function Profile() {
         </MenuItem>
         <MenuItem icon={<PiBooksLight size={iconSize} />} href={ROUTES.MYSTUDY.url}>
           나의 스터디
+        </MenuItem>
+        <MenuItem icon={<MdOutlineEventNote size={iconSize} />} href={ROUTES.MYEVENT.url}>
+          행사 관리
         </MenuItem>
 
         {session.data.role === 'ROLE_ADMIN' && (

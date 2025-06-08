@@ -27,7 +27,7 @@ export const ROUTES = {
       url: '/study/open'
     },
     SIGNUP: (id: string) => ({
-      name: '스터디 참여',
+      name: '스터디 신청',
       url: `/study/${id}/signup`
     })
   },
@@ -35,6 +35,10 @@ export const ROUTES = {
     index: {
       name: '행사',
       url: '/event'
+    },
+    OPEN: {
+      name: '행사 개설',
+      url: '/event/open'
     }
   },
   POST: {
@@ -63,6 +67,10 @@ export const ROUTES = {
     name: '나의 스터디',
     url: '/mystudy'
   },
+  MYEVENT: {
+    name: '행사 관리',
+    url: '/myevent'
+  },
   PROFILE: {
     name: '프로필',
     url: '/profile'
@@ -73,12 +81,12 @@ export const ROUTES = {
       url: '/admin'
     },
     STUDY: {
-      name: '스터디 관리',
-      url: '/admin/studies'
+      name: '스터디',
+      url: '/admin/study'
     },
     USER: {
-      name: '유저 관리',
-      url: '/admin/users'
+      name: '유저',
+      url: '/admin/user'
     }
   }
 }

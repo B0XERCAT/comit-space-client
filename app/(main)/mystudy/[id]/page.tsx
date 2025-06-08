@@ -182,167 +182,171 @@ export default function StudyDetailPage({ params }: StudyDetailProps) {
   }
 
   return (
-    <div className="max-w-7xl space-y-8 p-6">
+    <div className="mx-auto max-w-7xl space-y-8 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{study.title}</h1>
         <Button onClick={() => router.push(`/mystudy/${id}/edit`)}>스터디 수정</Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>스터디 정보</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-6">
-            {/* Basic Info */}
-            <div className="flex items-start gap-6">
-              <Image
-                src={study.imageSrc || '/empty-300x240.jpg'}
-                alt={study.title}
-                width={200}
-                height={200}
-                className="rounded-lg object-cover"
-              />
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <IoPersonSharp />
-                    <UserHoverCard user={study.mentor} />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MdOutlineSignalCellularAlt />
-                    {study.level}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaSchoolFlag />
-                    {study.campus}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RiStackOverflowLine />
-                  {study.tags?.join(', ') || '태그 없음'}
-                </div>
-                <div>
-                  {!study.day ? null : !study.startTime || !study.endTime ? (
-                    <div className="flex gap-3 text-lg text-gray-600">
-                      {study.day}요일 <span className="text-base text-red-500">(시간 미정)</span>
-                    </div>
-                  ) : (
-                    <div className="text-lg text-gray-600">
-                      {study.day} {study.startTime.substring(0, 5)} ~ {study.endTime.substring(0, 5)}
-                    </div>
-                  )}
-                </div>
-                <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                  {study.isRecruiting ? '모집 중' : '모집 마감'}
-                </div>
-              </div>
+      <div className="flex justify-between gap-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>스터디 정보</CardTitle>
+            <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+              {study.isRecruiting ? '모집 중' : '모집 마감'}
             </div>
-
-            {/* Description */}
-            <div className="prose max-w-none">
-              <div data-color-mode="light">
-                <MarkdownPreview source={study.description} />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>멤버 관리</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="accepted">
-            <TabsList>
-              <TabsTrigger value="accepted">참여 중인 멤버 ({acceptedMembers.length})</TabsTrigger>
-              <TabsTrigger value="waiting">대기 중인 멤버 ({waitingMembers.length})</TabsTrigger>
-              <TabsTrigger value="rejected">거절된 멤버 ({rejectedMembers.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="accepted" className="mt-4">
-              <div className="space-y-4">
-                {acceptedMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-4">
-                      {member.profileImage && (
-                        <Image
-                          src={member.profileImage}
-                          alt={member.username}
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{member.username}</p>
-                        <p className="text-sm text-gray-500">{member.position}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {acceptedMembers.length === 0 && (
-                  <p className="text-center text-gray-500">참여 중인 멤버가 없습니다.</p>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="waiting" className="mt-4">
-              <div className="space-y-4">
-                {waitingMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-4">
-                      {member.profileImage && (
-                        <Image
-                          src={member.profileImage}
-                          alt={member.username}
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{member.username}</p>
-                        <p className="text-sm text-gray-500">{member.position}</p>
-                      </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-6">
+              {/* Basic Info */}
+              <div className="flex items-center gap-6">
+                <Image
+                  src={study.imageSrc || '/empty-300x240.jpg'}
+                  alt={study.title}
+                  width={120}
+                  height={120}
+                  className="rounded-lg object-cover"
+                />
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <IoPersonSharp />
+                      <UserHoverCard user={study.mentor} />
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
-                      <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
-                        거절
-                      </Button>
+                      <MdOutlineSignalCellularAlt />
+                      {study.level}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FaSchoolFlag />
+                      {study.campus}
                     </div>
                   </div>
-                ))}
-                {waitingMembers.length === 0 && <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>}
+                  <div className="flex items-center gap-2">
+                    <RiStackOverflowLine />
+                    {study.tags?.join(', ') || '태그 없음'}
+                  </div>
+                  <div>
+                    {!study.day ? null : !study.startTime || !study.endTime ? (
+                      <div className="flex gap-3 text-lg text-gray-600">
+                        {study.day}요일 <span className="text-base text-red-500">(시간 미정)</span>
+                      </div>
+                    ) : (
+                      <div className="text-lg text-gray-600">
+                        {study.day} {study.startTime.substring(0, 5)} ~ {study.endTime.substring(0, 5)}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </TabsContent>
-            <TabsContent value="rejected" className="mt-4">
-              <div className="space-y-4">
-                {rejectedMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-4">
-                      {member.profileImage && (
-                        <Image
-                          src={member.profileImage}
-                          alt={member.username}
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{member.username}</p>
-                        <p className="text-sm text-gray-500">{member.position}</p>
+
+              {/* Description */}
+              <div className="prose max-w-none">
+                <div data-color-mode="light">
+                  <MarkdownPreview source={study.description} />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>멤버 관리</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="accepted">
+              <TabsList>
+                <TabsTrigger value="accepted">참여 중인 멤버 ({acceptedMembers.length})</TabsTrigger>
+                <TabsTrigger value="waiting">대기 중인 멤버 ({waitingMembers.length})</TabsTrigger>
+                <TabsTrigger value="rejected">거절된 멤버 ({rejectedMembers.length})</TabsTrigger>
+              </TabsList>
+              <TabsContent value="accepted" className="mt-4">
+                <div className="space-y-4">
+                  {acceptedMembers.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center gap-4">
+                        {member.profileImage && (
+                          <Image
+                            src={member.profileImage}
+                            alt={member.username}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{member.username}</p>
+                          <p className="text-sm text-gray-500">{member.position}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {rejectedMembers.length === 0 && <p className="text-center text-gray-500">거절된 멤버가 없습니다.</p>}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                  ))}
+                  {acceptedMembers.length === 0 && (
+                    <p className="text-center text-gray-500">참여 중인 멤버가 없습니다.</p>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="waiting" className="mt-4">
+                <div className="space-y-4">
+                  {waitingMembers.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center gap-4">
+                        {member.profileImage && (
+                          <Image
+                            src={member.profileImage}
+                            alt={member.username}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{member.username}</p>
+                          <p className="text-sm text-gray-500">{member.position}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
+                        <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
+                          거절
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {waitingMembers.length === 0 && (
+                    <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="rejected" className="mt-4">
+                <div className="space-y-4">
+                  {rejectedMembers.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center gap-4">
+                        {member.profileImage && (
+                          <Image
+                            src={member.profileImage}
+                            alt={member.username}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{member.username}</p>
+                          <p className="text-sm text-gray-500">{member.position}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {rejectedMembers.length === 0 && <p className="text-center text-gray-500">거절된 멤버가 없습니다.</p>}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

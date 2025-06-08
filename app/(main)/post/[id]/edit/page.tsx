@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import MDEditor from '@uiw/react-md-editor'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -10,7 +11,6 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
@@ -23,7 +23,7 @@ const schema = z.object({
   content: z
     .string()
     .min(1, { message: '내용을 입력해주세요' })
-    .max(2000, { message: '내용은 2000자 이내로 입력해주세요' }),
+    .max(10000, { message: '내용은 10000자 이내로 입력해주세요' }),
   imageSrc: z.string().optional()
 })
 
@@ -39,6 +39,7 @@ export default function EditPost() {
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [image, setImage] = useState<string>('')
+  const [content, setContent] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
 
   const {
@@ -84,6 +85,7 @@ export default function EditPost() {
         // Set form values
         setValue('title', post.title)
         setValue('content', post.content)
+        setContent(post.content)
         if (post.imageSrc) {
           setImage(post.imageSrc)
           setValue('imageSrc', post.imageSrc)
@@ -131,6 +133,7 @@ export default function EditPost() {
         },
         body: JSON.stringify({
           ...data,
+          content,
           imageSrc: fileUrl
         })
       })
@@ -200,7 +203,17 @@ export default function EditPost() {
         {/* 내용 */}
         <div className="space-y-1">
           <Label>내용</Label>
-          <Textarea {...register('content')} placeholder="내용을 입력하세요" className="h-64" />
+          <div data-color-mode="light">
+            <MDEditor
+              value={content}
+              onChange={(value) => {
+                setContent(value || '')
+                setValue('content', value || '')
+              }}
+              preview="edit"
+              height={400}
+            />
+          </div>
           {errors.content && <p className="text-sm text-red-500">{errors.content.message}</p>}
         </div>
 

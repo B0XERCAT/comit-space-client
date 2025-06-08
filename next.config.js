@@ -4,6 +4,18 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'lh3.googleusercontent.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'ufxqvhvxvxvxvxvx.supabase.co'
+      },
+      {
+        protocol: 'https',
         hostname: `${process.env.NEXT_PUBLIC_SUPABASE_REFRENCE_ID}.supabase.co`,
         pathname: '/**'
       }
@@ -21,6 +33,13 @@ const nextConfig = {
         ]
       }
     ]
+  },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'raw-loader'
+    })
+    return config
   }
 }
 

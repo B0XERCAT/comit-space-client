@@ -1,5 +1,6 @@
 'use client'
 
+import MDEditor from '@uiw/react-md-editor'
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
@@ -203,7 +204,9 @@ export default function PostDetail() {
             <Image src={post.imageSrc} alt={post.title} width={800} height={400} className="rounded-lg object-cover" />
           </div>
         )}
-        <div className="mb-8 whitespace-pre-wrap text-gray-700">{post.content}</div>
+        <div data-color-mode="light" className="mb-8">
+          <MDEditor.Markdown source={post.content} />
+        </div>
 
         {/* Post info */}
         <div className="mb-8 flex items-center gap-4 text-sm text-gray-500">

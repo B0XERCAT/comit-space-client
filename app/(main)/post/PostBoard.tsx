@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import removeMd from 'remove-markdown'
 
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
@@ -92,7 +93,7 @@ function PostCard({ post }: { post: Post }) {
 
           {/* Title and content */}
           <h3 className="mb-2 text-xl font-bold">{post.title}</h3>
-          <p className="mb-4 line-clamp-3 text-gray-600">{post.content}</p>
+          <p className="mb-4 line-clamp-3 text-gray-600">{removeMd(post.content)}</p>
 
           {/* Post info */}
           <div className="flex items-center gap-4 text-sm text-gray-500">

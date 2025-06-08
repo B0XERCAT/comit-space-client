@@ -132,7 +132,7 @@ export default function MyStudy() {
   }
 
   return (
-    <div id="mystudy-body__content" className="flex max-w-full flex-1 flex-col pb-16 sm:pt-8">
+    <div id="mystudy-body__content" className="flex max-w-full flex-1 flex-col pb-16 sm:pt-4">
       <div className="flex border-b border-[#dee2e6]">
         <button
           onClick={() => setActiveTab('joined')}

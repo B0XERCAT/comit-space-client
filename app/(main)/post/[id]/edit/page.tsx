@@ -132,13 +132,15 @@ export default function EditPost() {
           Authorization: `Bearer ${session.data.accessToken}`
         },
         body: JSON.stringify({
-          ...data,
-          content,
+          title: data.title,
+          content: content || '',
           imageSrc: fileUrl
         })
       })
 
       if (!res.ok) {
+        const errorData = await res.json()
+        console.error('Error response:', errorData)
         throw new Error('게시글 수정에 실패했습니다.')
       }
 

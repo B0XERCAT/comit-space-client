@@ -80,8 +80,6 @@ function CreatePostForm() {
         fileUrl = file.supabaseFileData.url
       }
 
-      console.log(data)
-
       const res = await fetchData(
         API_ENDPOINTS.CLIENT.POST.CREATE(groupType as 'STUDY' | 'EVENT', Number(groupId)) as ApiEndpoint,
         {
@@ -91,14 +89,16 @@ function CreatePostForm() {
             Authorization: `Bearer ${session.data.accessToken}`
           },
           body: JSON.stringify({
-            ...data,
+            title: data.title,
+            content: content || '', // 직접 content state 값을 사용
             imageSrc: fileUrl
           })
         }
       )
 
       if (!res.ok) {
-        console.log(res)
+        const errorData = await res.json()
+        console.error('Error response:', errorData)
         throw new Error('게시글 작성에 실패했습니다.')
       }
 

@@ -182,7 +182,7 @@ export default function EventDetailPage({ params }: EventDetailProps) {
   // 세션이 로드되기 전까지는 로딩 상태 표시
   if (session === null) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <LoadingSpinner />
       </div>
     )
@@ -196,15 +196,15 @@ export default function EventDetailPage({ params }: EventDetailProps) {
 
   if (!event) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <LoadingSpinner />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <Card>
+    <div className="flex w-full justify-center gap-8">
+      <Card className="w-1/2">
         <CardHeader>
           <CardTitle>{event.title}</CardTitle>
         </CardHeader>
@@ -264,16 +264,16 @@ export default function EventDetailPage({ params }: EventDetailProps) {
       </Card>
 
       {isStaff && (
-        <Card>
+        <Card className="w-1/2">
           <CardHeader>
             <CardTitle>참여자 관리</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="waiting" className="w-full">
               <TabsList>
-                <TabsTrigger value="waiting">대기 ({waitingMembers.length})</TabsTrigger>
-                <TabsTrigger value="accepted">승인 ({acceptedMembers.length})</TabsTrigger>
-                <TabsTrigger value="rejected">거절 ({rejectedMembers.length})</TabsTrigger>
+                <TabsTrigger value="waiting">대기 중인 멤버 ({waitingMembers.length})</TabsTrigger>
+                <TabsTrigger value="accepted">승인된 멤버 ({acceptedMembers.length})</TabsTrigger>
+                <TabsTrigger value="rejected">거절된 멤버 ({rejectedMembers.length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="waiting" className="mt-4">

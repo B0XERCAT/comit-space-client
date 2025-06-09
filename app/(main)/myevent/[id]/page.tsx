@@ -13,6 +13,7 @@ import { HttpStatusCode } from '@/app/api/utils/httpConsts'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/components/ui/use-toast'
 import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
@@ -277,86 +278,96 @@ export default function EventDetailPage({ params }: EventDetailProps) {
               </TabsList>
 
               <TabsContent value="waiting" className="mt-4">
-                <div className="space-y-4">
-                  {waitingMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="flex items-center gap-4">
-                        {member.profileImage && (
-                          <Image
-                            src={member.profileImage}
-                            alt={member.username}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{member.username}</p>
-                          <p className="text-sm text-gray-500">{member.position}</p>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4 pr-4">
+                    {waitingMembers.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="flex items-center gap-4">
+                          {member.profileImage && (
+                            <Image
+                              src={member.profileImage}
+                              alt={member.username}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          )}
+                          <div>
+                            <p className="font-medium">{member.username}</p>
+                            <p className="text-sm text-gray-500">{member.position}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
+                          <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
+                            거절
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button onClick={() => handleMemberStateUpdate(member.id, 'Accept')}>승인</Button>
-                        <Button variant="outline" onClick={() => handleMemberStateUpdate(member.id, 'Reject')}>
-                          거절
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  {waitingMembers.length === 0 && (
-                    <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>
-                  )}
-                </div>
+                    ))}
+                    {waitingMembers.length === 0 && (
+                      <p className="text-center text-gray-500">대기 중인 멤버가 없습니다.</p>
+                    )}
+                  </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent value="accepted" className="mt-4">
-                <div className="space-y-4">
-                  {acceptedMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="flex items-center gap-4">
-                        {member.profileImage && (
-                          <Image
-                            src={member.profileImage}
-                            alt={member.username}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{member.username}</p>
-                          <p className="text-sm text-gray-500">{member.position}</p>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4 pr-4">
+                    {acceptedMembers.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="flex items-center gap-4">
+                          {member.profileImage && (
+                            <Image
+                              src={member.profileImage}
+                              alt={member.username}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          )}
+                          <div>
+                            <p className="font-medium">{member.username}</p>
+                            <p className="text-sm text-gray-500">{member.position}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  {acceptedMembers.length === 0 && <p className="text-center text-gray-500">승인된 멤버가 없습니다.</p>}
-                </div>
+                    ))}
+                    {acceptedMembers.length === 0 && (
+                      <p className="text-center text-gray-500">승인된 멤버가 없습니다.</p>
+                    )}
+                  </div>
+                </ScrollArea>
               </TabsContent>
 
               <TabsContent value="rejected" className="mt-4">
-                <div className="space-y-4">
-                  {rejectedMembers.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="flex items-center gap-4">
-                        {member.profileImage && (
-                          <Image
-                            src={member.profileImage}
-                            alt={member.username}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{member.username}</p>
-                          <p className="text-sm text-gray-500">{member.position}</p>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4 pr-4">
+                    {rejectedMembers.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="flex items-center gap-4">
+                          {member.profileImage && (
+                            <Image
+                              src={member.profileImage}
+                              alt={member.username}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          )}
+                          <div>
+                            <p className="font-medium">{member.username}</p>
+                            <p className="text-sm text-gray-500">{member.position}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  {rejectedMembers.length === 0 && <p className="text-center text-gray-500">거절된 멤버가 없습니다.</p>}
-                </div>
+                    ))}
+                    {rejectedMembers.length === 0 && (
+                      <p className="text-center text-gray-500">거절된 멤버가 없습니다.</p>
+                    )}
+                  </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           </CardContent>

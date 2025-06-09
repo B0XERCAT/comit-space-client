@@ -82,11 +82,11 @@ export const ROUTES = {
     },
     STUDY: {
       name: '스터디',
-      url: '/admin/study'
+      url: '/admin/studies'
     },
     USER: {
       name: '유저',
-      url: '/admin/user'
+      url: '/admin/users'
     }
   }
 }

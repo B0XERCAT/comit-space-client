@@ -11,6 +11,7 @@ const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), { s
 
 import { HttpStatusCode } from '@/app/api/utils/httpConsts'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -247,6 +248,12 @@ export default function EventDetailPage({ params }: EventDetailProps) {
                     <span className="text-sm text-gray-500">
                       {event.year}년 {event.semester}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">모집 상태:</span>
+                    <Badge variant={event.isRecruiting ? 'default' : 'secondary'}>
+                      {event.isRecruiting ? '모집 중' : '모집 마감'}
+                    </Badge>
                   </div>
                   {event.tags && event.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">

@@ -56,6 +56,12 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/admin/posts/${id}`,
         method: 'DELETE'
       })
+    },
+    COMMENT: {
+      DELETE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/admin/comments/${id}`,
+        method: 'DELETE'
+      })
     }
   },
   CLIENT: {

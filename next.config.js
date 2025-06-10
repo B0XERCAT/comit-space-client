@@ -40,7 +40,26 @@ const nextConfig = {
       use: 'raw-loader'
     })
     return config
+  },
+  staticPageGenerationTimeout: 1000,
+  experimental: {
+    workerThreads: true,
+    cpus: 4
+  },
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
   }
 }
 
-module.exports = nextConfig
+// 전역 fetch 캐시 설정
+const fetchConfig = {
+  fetchCache: false,
+  revalidate: 0,
+  runtime: 'nodejs'
+}
+
+module.exports = {
+  ...nextConfig,
+  ...fetchConfig
+}

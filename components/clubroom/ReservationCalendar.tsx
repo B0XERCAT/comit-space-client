@@ -7,6 +7,7 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { useEffect, useState } from 'react'
 
+import WaitingReservations from '@/components/clubroom/WaitingReservations'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -253,6 +254,8 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
         slotMinTime="09:00:00"
         slotMaxTime="23:00:00"
       />
+
+      {isStaff && <WaitingReservations onRefresh={onRefresh} />}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>

@@ -4,13 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { redirect, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { MdCalendarMonth, MdLocationOn } from 'react-icons/md'
+import { useForm } from 'react-hook-form'
+import { MdHelpOutline } from 'react-icons/md'
 import { z } from 'zod'
 
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 import SectionBanner from '@/components/common/SectionBanner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -27,12 +28,12 @@ const schema = z.object({
   imageSrc: z.string({
     required_error: '이미지를 업로드해주세요'
   }),
-  title: z.string().min(1, { message: '행사 제목을 입력하세요' }),
+  title: z.string().min(1, { message: '행사 제목을 입력해주세요' }),
   startDate: z.string({
-    required_error: '시작 날짜를 선택해주세요'
+    required_error: '시작 날짜를 입력해주세요'
   }),
   endDate: z.string({
-    required_error: '종료 날짜를 선택해주세요'
+    required_error: '종료 날짜를 입력해주세요'
   }),
   location: z.string().min(1, { message: '장소를 입력해주세요' }),
   tags: z.array(z.string()).min(1, { message: '태그를 입력해주세요' }),
@@ -42,23 +43,21 @@ const schema = z.object({
     .max(800, { message: '설명은 800자 이내로 입력해주세요' })
 })
 
-type EventForm = Omit<Event, 'id' | 'isRecruiting' | 'startTime' | 'endTime' | 'semester' | 'year'>
+type EventForm = Omit<Event, 'id' | 'isRecruiting'>
 
 export default function CreateEvent() {
   const session = useSession()
   const router = useRouter()
   const { toast } = useToast()
-  const fileHandler = useSupabaseFile({ pathPrefix: 'image/event' })
   const fileRef = useRef<HTMLInputElement>(null)
+  const fileHandler = useSupabaseFile({ pathPrefix: 'image/event/new' })
 
-  // Form handling
   const {
     handleSubmit,
     register,
     setValue,
     getValues,
     watch,
-    control,
     setError,
     clearErrors,
     formState: { errors, isSubmitting }
@@ -69,21 +68,20 @@ export default function CreateEvent() {
     }
   })
 
-  // State management
-  const [isStaff, setIsStaff] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [image, setImage] = useState<string>('')
   const [tagError, setTagError] = useState<string>('')
   const [currentTag, setCurrentTag] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
+  const [isStaff, setIsStaff] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Staff check
   useEffect(() => {
     const checkStaffStatus = async () => {
-      if (!session?.data?.accessToken || !session?.data?.username) return
+      if (!session?.data?.accessToken) return
 
       try {
-        const res = await fetchData(API_ENDPOINTS.CLIENT.STAFF_LIST as ApiEndpoint, {
+        const res = await fetchData(API_ENDPOINTS.CLIENT.STAFF.LIST as ApiEndpoint, {
           headers: {
             Authorization: `Bearer ${session.data.accessToken}`
           }
@@ -95,9 +93,7 @@ export default function CreateEvent() {
 
         const json = await res.json()
         const staffList: User[] = json.data
-        const currentUsername = session.data.username
-
-        setIsStaff(staffList.some((staff: User) => staff.username === currentUsername))
+        setIsStaff(staffList.some((staff) => staff.username === session.data?.username))
       } catch (error) {
         console.error('Failed to check staff status:', error)
       } finally {
@@ -107,25 +103,6 @@ export default function CreateEvent() {
 
     checkStaffStatus()
   }, [session])
-
-  // Authentication check
-  if (session === null) {
-    return null // Wait for session to load
-  }
-
-  if (session.error) {
-    redirect(ROUTES.LOGIN.url)
-  }
-
-  if (isLoading) {
-    return null
-  }
-
-  if (!isStaff) {
-    redirect(ROUTES.EVENT.index.url)
-  }
-
-  const watchedTags: string[] = watch('tags')
 
   const handleFileChange = (e: React.ChangeEvent) => {
     const targetFiles = (e.target as HTMLInputElement).files as FileList
@@ -137,12 +114,11 @@ export default function CreateEvent() {
     }
   }
 
-  const handleTagChange = (e: { target: { value: string } }) => {
+  const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentTag(e.target.value)
   }
 
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.preventDefault()
     const newTag = e.currentTarget.value.trim()
 
     if (watchedTags.length === 4) {
@@ -169,50 +145,46 @@ export default function CreateEvent() {
     setCurrentTag('')
   }
 
-  const removeTag = (indexToRemove: number) => {
-    const newTags = watchedTags.filter((_, index) => index !== indexToRemove)
-    setValue('tags', newTags)
-  }
-
   const onSubmit = async (data: EventForm) => {
-    if (!imageFile) return
+    if (!session?.data?.accessToken || !imageFile) return
 
     try {
       const file = await fileHandler.upload(imageFile)
       const fileUrl = file.supabaseFileData.url
 
-      const res = await fetchData(
-        {
-          url: `${API_ENDPOINTS.CLIENT.EVENT.LIST.url}`,
-          method: 'POST'
-        } as ApiEndpoint,
-        {
-          body: JSON.stringify({
-            ...data,
-            imageSrc: fileUrl,
-            startTime: '15:00',
-            endTime: '22:00',
-            isRecruiting: true,
-            semester: 'Spring',
-            year: 2025
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.data.accessToken}`
-          },
-          credentials: 'include'
+      const submitData = {
+        title: data.title,
+        imageSrc: fileUrl,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        startTime: '15:00',
+        endTime: '22:00',
+        tags: data.tags,
+        location: data.location,
+        description: data.description,
+        isRecruiting: true,
+        semester: 'Spring',
+        year: 2025
+      }
+
+      const res = await fetchData(API_ENDPOINTS.CLIENT.EVENT.CREATE as ApiEndpoint, {
+        method: 'POST',
+        body: JSON.stringify(submitData),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.data.accessToken}`
         }
-      )
+      })
 
       if (!res.ok) {
         await file.delete()
-        throw new Error('Failed to create event')
+        throw new Error('행사 생성에 실패했습니다.')
       }
 
       file.commit()
       toast({
         title: '행사 생성 완료',
-        description: '행사가 성공적으로 생성되었습니다.'
+        description: '행사가 성공적으로 생성되었습니다!'
       })
       router.push(ROUTES.EVENT.index.url)
     } catch (error) {
@@ -225,147 +197,167 @@ export default function CreateEvent() {
     }
   }
 
-  return (
-    <div className="flex flex-col items-center">
-      <SectionBanner title="Create Event" description="새로운 행사를 등록해주세요!" />
+  // Loading states
+  if (session === null) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 w-full max-w-2xl space-y-8 px-4">
-        {/* Image Upload */}
-        <div className="space-y-1">
-          <Label>행사 이미지</Label>
-          <div className="flex justify-start">
+  if (session.error) {
+    redirect(ROUTES.LOGIN.url)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
+  if (!isStaff) {
+    redirect(ROUTES.EVENT.index.url)
+  }
+
+  const watchedTags = watch('tags')
+
+  return (
+    <div className="mx-auto w-full space-y-8 p-6">
+      <SectionBanner title="Create Event" description="새로운 행사를 등록해주세요!" />
+      <form onSubmit={handleSubmit(onSubmit)} className="mx-auto flex max-w-2xl flex-col gap-8">
+        <div className="grid grid-cols-[240px_1fr] gap-8">
+          {/* 이미지 업로드 */}
+          <div className="flex flex-col gap-4">
+            <Label>행사 이미지</Label>
             <div
               onClick={() => fileRef.current?.click()}
-              className="relative h-48 w-48 cursor-pointer overflow-hidden rounded-lg border-2 border-dashed"
+              className="flex h-[240px] w-[240px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
             >
               {image ? (
-                <Image src={image} alt="Event" fill className="object-cover" />
+                <Image src={image} width={240} height={240} alt="Event" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-gray-500">이미지 업로드</span>
-                </div>
+                <p className="text-5xl font-light text-slate-300">+</p>
               )}
               <input type="file" accept="image/*" className="hidden" ref={fileRef} onChange={handleFileChange} />
             </div>
+            {errors.imageSrc && <p className="text-sm text-red-500">{errors.imageSrc.message}</p>}
           </div>
-          {errors.imageSrc && <p className="text-sm text-red-500">{errors.imageSrc.message}</p>}
-        </div>
 
-        {/* Title */}
-        <div className="space-y-1">
-          <Label>행사 제목</Label>
-          <Input {...register('title')} placeholder="행사 제목을 입력하세요" />
-          {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
-        </div>
+          {/* 오른쪽 컬럼 */}
+          <div className="flex flex-col gap-6">
+            {/* 제목 */}
+            <div className="space-y-2">
+              <Label>제목</Label>
+              <Input {...register('title')} placeholder="행사 제목을 입력해주세요" />
+              {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+            </div>
 
-        {/* Date Selection */}
-        <div className="space-y-1">
-          <Label>행사 기간</Label>
-          <div className="flex gap-4">
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <MdCalendarMonth className="mr-2" />
-                      {field.value || '시작 날짜'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <MdCalendarMonth className="mr-2" />
-                      {field.value || '종료 날짜'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
+            {/* 날짜 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>시작 날짜</Label>
+                <Input type="date" {...register('startDate')} />
+                {errors.startDate && <p className="text-sm text-red-500">{errors.startDate.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label>종료 날짜</Label>
+                <Input type="date" {...register('endDate')} />
+                {errors.endDate && <p className="text-sm text-red-500">{errors.endDate.message}</p>}
+              </div>
+            </div>
+
+            {/* 장소 */}
+            <div className="space-y-2">
+              <Label>장소</Label>
+              <Input {...register('location')} placeholder="행사 장소를 입력해주세요" />
+              {errors.location && <p className="text-sm text-red-500">{errors.location.message}</p>}
+            </div>
           </div>
-          {(errors.startDate || errors.endDate) && (
-            <p className="text-sm text-red-500">{errors.startDate?.message || errors.endDate?.message}</p>
-          )}
         </div>
 
-        {/* Location */}
-        <div className="space-y-1">
-          <Label>장소</Label>
+        {/* 태그 */}
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <MdLocationOn className="text-xl text-gray-500" />
-            <Input {...register('location')} placeholder="행사 장소를 입력하세요" />
-          </div>
-          {errors.location && <p className="text-sm text-red-500">{errors.location.message}</p>}
-        </div>
-
-        {/* Tags */}
-        <div className="space-y-1">
-          <Label>태그</Label>
-          <div className="flex flex-wrap gap-2">
-            {watchedTags.map((tag, index) => (
-              <span key={index} className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm">
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(index)}
-                  className="ml-1 text-gray-500 hover:text-gray-700"
-                >
-                  ×
+            <Label>태그</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button">
+                  <MdHelpOutline className="hover:text-gray-600" />
                 </button>
-              </span>
-            ))}
+              </PopoverTrigger>
+              <PopoverContent className="mb-2 flex w-64 justify-center text-sm" side="top">
+                <ul>
+                  <li>최대 4개까지 입력 가능합니다.</li>
+                </ul>
+              </PopoverContent>
+            </Popover>
           </div>
-          <Input
-            value={currentTag}
-            onChange={handleTagChange}
-            onKeyDown={handleTagAdd}
-            placeholder="태그를 입력하고 Enter를 누르세요"
-            type="text"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-              }
-            }}
-          />
           {tagError && <p className="text-sm text-red-500">{tagError}</p>}
-          {errors.tags && <p className="text-sm text-red-500">{errors.tags.message}</p>}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <div className="relative w-[400px]">
+                <Input
+                  placeholder="태그를 입력해주세요"
+                  value={currentTag}
+                  onChange={handleTagChange}
+                  onKeyUp={handleTagAdd}
+                />
+                <Button
+                  type="button"
+                  className="absolute right-2 top-1/2 z-10 h-4 w-4 -translate-y-1/2 p-3 text-xl"
+                  disabled={currentTag.trim() === '' || (watchedTags && watchedTags.length >= 4)}
+                  onClick={handleDuplicateTag}
+                >
+                  +
+                </Button>
+              </div>
+              <Button
+                variant="secondary"
+                className="p-3"
+                type="button"
+                onClick={() => {
+                  setTagError('')
+                  clearErrors('tags')
+                  setValue('tags', [])
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+            {errors.tags && <p className="-mt-2 text-sm text-red-500">{errors.tags.message}</p>}
+            <div className="flex gap-4">
+              {watchedTags &&
+                watchedTags.map((tag, index) => (
+                  <Badge variant="secondary" key={index}>
+                    {tag}
+                  </Badge>
+                ))}
+            </div>
+          </div>
         </div>
 
-        {/* Description */}
-        <div className="space-y-1">
+        {/* 설명 */}
+        <div className="space-y-2">
           <Label>설명</Label>
-          <Textarea {...register('description')} placeholder="행사에 대한 설명을 입력하세요" className="h-32" />
+          <Textarea
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value)
+              setValue('description', e.target.value)
+            }}
+            placeholder="행사 설명을 입력해주세요"
+            className="min-h-[300px]"
+          />
           {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
         </div>
 
-        {/* Submit Button */}
+        {/* 제출 버튼 */}
         <div className="flex justify-end">
-          <Button type="submit" className="mb-10 px-8" disabled={isSubmitting}>
-            {isSubmitting ? '등록 중...' : '행사 등록'}
+          <Button type="submit" className="px-8" disabled={isSubmitting}>
+            {isSubmitting ? '생성 중...' : '생성하기'}
           </Button>
         </div>
       </form>

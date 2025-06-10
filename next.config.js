@@ -52,14 +52,4 @@ const nextConfig = {
   }
 }
 
-// 전역 fetch 캐시 설정
-const fetchConfig = {
-  fetchCache: false,
-  revalidate: 0,
-  runtime: 'nodejs'
-}
-
-module.exports = {
-  ...nextConfig,
-  ...fetchConfig
-}
+module.exports = nextConfig

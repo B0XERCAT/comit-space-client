@@ -46,6 +46,16 @@ const JSP_ENDPOINTS = {
         method: 'PATCH' as HttpMethod
       }),
       DELETE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/admin/events/${id}`, method: 'DELETE' as HttpMethod })
+    },
+    POST: {
+      LIST: {
+        url: `${baseURL}/${API_PREFIX}/admin/posts`,
+        method: 'GET'
+      },
+      DELETE: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/admin/posts/${id}`,
+        method: 'DELETE'
+      })
     }
   },
   CLIENT: {

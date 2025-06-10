@@ -183,16 +183,17 @@ export default function PostBoard() {
 
       try {
         setIsPostsLoading(true)
+        // API 호출 시 소문자를 대문자로 변환
         const groupType = selectedType.toUpperCase() as 'STUDY' | 'EVENT'
+        console.log('Fetching posts for type:', groupType) // 디버깅용 로그
         const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST(groupType))
 
         if (!res.ok) {
           throw new Error('게시글을 불러오는 중 오류가 발생했습니다.')
         }
         const json: CustomResponse = await res.json()
-        const allPosts: Post[] = json.data
-        // Filter posts by selected group
-        setPosts(allPosts.filter((post) => post.groupId.toString() === selectedId))
+        const posts: Post[] = json.data
+        setPosts(posts.filter((post) => post.groupId.toString() === selectedId))
       } catch (error) {
         console.error('Error fetching posts:', error)
         setError('게시글을 불러오는 중 오류가 발생했습니다.')
@@ -217,7 +218,9 @@ export default function PostBoard() {
       {selectedId && selectedType ? (
         <div>
           <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">{groups.find((g) => g.id.toString() === selectedId)?.title}</h1>
+            <h1 className="text-2xl font-bold">
+              {groups.find((g) => g.id.toString() === selectedId && g.type === selectedType)?.title}
+            </h1>
             <Button
               onClick={async () => {
                 if (!session?.data?.accessToken) {

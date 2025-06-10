@@ -82,18 +82,19 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
   const handleReservation = async () => {
     if (!session || !selectedDate) return
 
-    const startDateTime = new Date(`${selectedDate}T${selectedTime.start}`).toISOString()
-    const endDateTime = new Date(`${selectedDate}T${selectedTime.end}`).toISOString()
+    const startDateTime = new Date(`${selectedDate}T${selectedTime.start}`)
+    const endDateTime = new Date(`${selectedDate}T${selectedTime.end}`)
+
+    startDateTime.setTime(startDateTime.getTime() + 9 * 60 * 60 * 1000)
+    endDateTime.setTime(endDateTime.getTime() + 9 * 60 * 60 * 1000)
 
     const reservationData = {
       studyId: 1,
-      startTime: startDateTime,
-      endTime: endDateTime,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       title,
       description
     }
-
-    console.log(reservationData)
 
     const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.CREATE as ApiEndpoint, {
       method: 'POST',

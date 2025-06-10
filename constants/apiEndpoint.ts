@@ -135,6 +135,14 @@ const JSP_ENDPOINTS = {
       DELETE: (id: number) => ({
         url: `${baseURL}/${API_PREFIX}/reservations/${id}`,
         method: 'DELETE' as HttpMethod
+      }),
+      ACCEPT: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/reservations/${id}/accept`,
+        method: 'PATCH' as HttpMethod
+      }),
+      REJECT: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/reservations/${id}/reject`,
+        method: 'PATCH' as HttpMethod
       })
     },
     STAFF_LIST: { url: `${baseURL}/${API_PREFIX}/staffs`, method: 'GET' as HttpMethod },
@@ -146,6 +154,12 @@ const JSP_ENDPOINTS = {
       JOINED_STUDY: { url: `${baseURL}/${API_PREFIX}/profile/joined-studies`, method: 'GET' as HttpMethod },
       CREATED_EVENT: { url: `${baseURL}/${API_PREFIX}/profile/created-events`, method: 'GET' as HttpMethod },
       JOINED_EVENT: { url: `${baseURL}/${API_PREFIX}/profile/joined-events`, method: 'GET' as HttpMethod }
+    },
+    STAFF: {
+      LIST: {
+        url: `${baseURL}/${API_PREFIX}/staffs`,
+        method: 'GET' as HttpMethod
+      } as const
     }
   },
   AUTH: {

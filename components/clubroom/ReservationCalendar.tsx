@@ -24,7 +24,7 @@ import { API_ENDPOINTS, ApiEndpoint } from '@/constants/apiEndpoint'
 import { useSession } from '@/lib/auth/SessionProvider'
 import { fetchData } from '@/lib/fetch'
 import { CustomResponse } from '@/lib/response'
-import { Reservation } from '@/types'
+import { Reservation, User } from '@/types'
 
 interface ReservationCalendarProps {
   onMonthChange: (year: number, month: number) => void
@@ -52,6 +52,7 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
+  const [isStaff, setIsStaff] = useState(false)
   const session = useSession()
   const { toast } = useToast()
 
@@ -155,6 +156,83 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
     loadReservations(year, month)
     onMonthChange(year, month)
   }
+
+  const checkIsStaff = async () => {
+    if (!session?.data?.accessToken) return false
+
+    const res = await fetchData(API_ENDPOINTS.CLIENT.STAFF.LIST as ApiEndpoint, {
+      headers: {
+        Authorization: `Bearer ${session.data.accessToken}`
+      }
+    })
+
+    if (!res.ok) return false
+
+    const json: CustomResponse = await res.json()
+    const staffList: User[] = json.data
+    return staffList.some((staff) => staff.username === session.data?.username)
+  }
+
+  const handleApproval = async () => {
+    if (!selectedReservation) return
+
+    const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.ACCEPT(selectedReservation.id) as ApiEndpoint, {
+      headers: {
+        Authorization: `Bearer ${session?.data?.accessToken}`
+      }
+    })
+
+    if (!res.ok) {
+      toast({
+        title: '승인 처리 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    toast({
+      title: '예약이 승인되었습니다.',
+      variant: 'default'
+    })
+    setIsDetailsDialogOpen(false)
+    onRefresh()
+  }
+
+  const handleRejection = async () => {
+    if (!selectedReservation) return
+
+    const res = await fetchData(API_ENDPOINTS.CLIENT.RESERVATION.REJECT(selectedReservation.id) as ApiEndpoint, {
+      headers: {
+        Authorization: `Bearer ${session?.data?.accessToken}`
+      }
+    })
+
+    if (!res.ok) {
+      toast({
+        title: '거절 처리 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    toast({
+      title: '예약이 거절되었습니다.',
+      variant: 'default'
+    })
+    setIsDetailsDialogOpen(false)
+    onRefresh()
+  }
+
+  useEffect(() => {
+    const checkStaffStatus = async () => {
+      const staffStatus = await checkIsStaff()
+      setIsStaff(staffStatus)
+    }
+
+    if (session?.data?.accessToken) {
+      checkStaffStatus()
+    }
+  }, [session])
 
   return (
     <div className="max-w-5xl">
@@ -267,7 +345,17 @@ export default function ReservationCalendar({ onMonthChange, onRefresh }: Reserv
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
+            {isStaff && selectedReservation?.isVerified === 'WAIT' && (
+              <>
+                <Button onClick={handleApproval} variant="default" className="bg-green-600 hover:bg-green-700">
+                  승인
+                </Button>
+                <Button onClick={handleRejection} variant="destructive">
+                  거절
+                </Button>
+              </>
+            )}
             <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
               닫기
             </Button>

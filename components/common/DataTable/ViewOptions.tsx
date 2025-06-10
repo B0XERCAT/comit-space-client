@@ -21,14 +21,23 @@ interface DataTableViewOptionsProps<TData> {
 
 const userCheckedColumns = ['delete', 'id', 'username', 'isStaff', 'phoneNumber', 'position', 'role', 'studentId']
 const studyCheckedColums = ['delete', 'id', 'title', 'mentor', 'level', 'campus', 'semester', 'isRecruiting']
+const eventCheckedColumns = ['delete', 'id', 'title', 'location', 'startDate', 'endDate', 'semester', 'isRecruiting']
 
 export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps<TData>) {
   const pathname = usePathname()
-  const defaultCheckedColumns = pathname.includes('users') ? userCheckedColumns : studyCheckedColums
+  const defaultCheckedColumns = pathname.includes('users')
+    ? userCheckedColumns
+    : pathname.includes('events')
+      ? eventCheckedColumns
+      : studyCheckedColums
   const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultCheckedColumns)
 
   useEffect(() => {
-    const defaultCheckedColumns = pathname.includes('users') ? userCheckedColumns : studyCheckedColums
+    const defaultCheckedColumns = pathname.includes('users')
+      ? userCheckedColumns
+      : pathname.includes('events')
+        ? eventCheckedColumns
+        : studyCheckedColums
     setVisibleColumns(defaultCheckedColumns)
 
     table.getAllColumns().forEach((column) => {

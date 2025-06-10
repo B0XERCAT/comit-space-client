@@ -23,7 +23,7 @@ import { useToast } from '../ui/use-toast'
 
 interface DeleteButtonProps {
   id: number
-  type: 'study' | 'user'
+  type: 'study' | 'user' | 'event'
 }
 
 const DeleteButton = ({ id, type }: DeleteButtonProps) => {
@@ -38,6 +38,8 @@ const DeleteButton = ({ id, type }: DeleteButtonProps) => {
       apiEndpoint = API_ENDPOINTS.ADMIN.STUDY.DELETE(id) as ApiEndpoint
     } else if (type === 'user') {
       apiEndpoint = API_ENDPOINTS.ADMIN.USER.DELETE(id) as ApiEndpoint
+    } else if (type === 'event') {
+      apiEndpoint = API_ENDPOINTS.ADMIN.EVENT.DELETE(id) as ApiEndpoint
     } else {
       console.error('Invalid type')
       return

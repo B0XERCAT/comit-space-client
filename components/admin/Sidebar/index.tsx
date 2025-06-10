@@ -3,6 +3,7 @@
 import { GoBook } from 'react-icons/go'
 import { IoHomeOutline } from 'react-icons/io5'
 import { IoPeopleOutline } from 'react-icons/io5'
+import { MdOutlineEvent } from 'react-icons/md'
 
 import NavLink from '@/components/admin/Sidebar/NavLink'
 import { ROUTES } from '@/constants/routes'
@@ -27,11 +28,14 @@ export default function SideBar({ className }: { className?: string }) {
             <NavLink href={ROUTES.ADMIN.DASHBOARD.url} icon={<IoHomeOutline size={24} />} collapsed={true}>
               Dashboard
             </NavLink>
+            <NavLink href={ROUTES.ADMIN.USER.url} icon={<IoPeopleOutline size={24} />} collapsed={true}>
+              User
+            </NavLink>
             <NavLink href={ROUTES.ADMIN.STUDY.url} icon={<GoBook size={24} />} collapsed={true}>
               Study
             </NavLink>
-            <NavLink href={ROUTES.ADMIN.USER.url} icon={<IoPeopleOutline size={24} />} collapsed={true}>
-              User
+            <NavLink href={ROUTES.ADMIN.EVENTS.url} icon={<MdOutlineEvent size={24} />} collapsed={true}>
+              Events
             </NavLink>
           </nav>
         </div>

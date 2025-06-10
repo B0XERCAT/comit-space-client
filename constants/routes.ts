@@ -84,6 +84,10 @@ export const ROUTES = {
       name: '스터디',
       url: '/admin/studies'
     },
+    EVENTS: {
+      name: '행사',
+      url: '/admin/events'
+    },
     USER: {
       name: '유저',
       url: '/admin/users'

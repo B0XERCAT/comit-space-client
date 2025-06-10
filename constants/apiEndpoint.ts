@@ -38,6 +38,14 @@ const JSP_ENDPOINTS = {
         method: 'PATCH' as HttpMethod
       }),
       DELETE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/admin/studies/${id}`, method: 'DELETE' as HttpMethod })
+    },
+    EVENT: {
+      LIST: { url: `${baseURL}/${API_PREFIX}/admin/events`, method: 'GET' as HttpMethod },
+      UPDATE_ISRECRUITING: (id: number) => ({
+        url: `${baseURL}/${API_PREFIX}/admin/events/${id}`,
+        method: 'PATCH' as HttpMethod
+      }),
+      DELETE: (id: number) => ({ url: `${baseURL}/${API_PREFIX}/admin/events/${id}`, method: 'DELETE' as HttpMethod })
     }
   },
   CLIENT: {

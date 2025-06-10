@@ -1,5 +1,6 @@
 import Image from 'next/image'
 
+import defaultProfile from '@/public/default-profile.svg'
 import { UserProfile } from '@/types'
 
 interface IntroduceMemberCardProps {
@@ -11,7 +12,7 @@ export default function IntroduceMemeberCard({ member }: IntroduceMemberCardProp
     <div className="flex items-center gap-8 max-md:flex-col">
       <div className="relative h-[168px] w-[168px] transform overflow-hidden rounded-[40px] shadow-md transition-transform hover:scale-125">
         <Image
-          src={member.profileImage ?? ''}
+          src={member.profileImage ?? defaultProfile}
           alt={member.username}
           width={168}
           height={168}

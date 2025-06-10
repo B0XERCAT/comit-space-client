@@ -111,6 +111,16 @@ const JSP_ENDPOINTS = {
         url: `${baseURL}/${API_PREFIX}/posts/${id}`,
         method: 'DELETE' as HttpMethod
       }),
+      LIKE: {
+        CREATE: (id: number) => ({
+          url: `${baseURL}/${API_PREFIX}/posts/${id}/like`,
+          method: 'POST' as HttpMethod
+        }),
+        DELETE: (id: number) => ({
+          url: `${baseURL}/${API_PREFIX}/posts/${id}/unlike`,
+          method: 'POST' as HttpMethod
+        })
+      },
       COMMENT: {
         CREATE: (postId: number) => ({
           url: `${baseURL}/${API_PREFIX}/posts/${postId}/comments`,

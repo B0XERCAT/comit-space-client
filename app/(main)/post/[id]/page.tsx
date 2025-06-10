@@ -1,7 +1,7 @@
 'use client'
 
 import MDEditor from '@uiw/react-md-editor'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Heart, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -34,6 +34,9 @@ export default function PostDetail() {
   const { toast } = useToast()
   const [post, setPost] = useState<Post | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLiked, setIsLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
+  const [isLikeLoading, setIsLikeLoading] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const fetchPost = async () => {
@@ -58,6 +61,12 @@ export default function PostDetail() {
 
       const json: CustomResponse = await res.json()
       setPost(json.data)
+      setLikeCount(json.data.likeCount)
+
+      // 좋아요 상태 체크
+      const likeKey = `like_${params.id}`
+      const isLiked = localStorage.getItem(likeKey) === 'true'
+      setIsLiked(isLiked)
     } catch (error) {
       console.error('Failed to load post:', error)
       toast({
@@ -128,6 +137,51 @@ export default function PostDetail() {
         variant: 'destructive',
         description: '게시글 삭제에 실패했습니다.'
       })
+    }
+  }
+
+  const handleLikeClick = async () => {
+    if (!session?.data?.accessToken) {
+      toast({
+        variant: 'destructive',
+        description: '좋아요를 누르려면 로그인이 필요합니다.'
+      })
+      return
+    }
+
+    if (isLikeLoading) return
+
+    try {
+      setIsLikeLoading(true)
+      const endpoint = isLiked ? API_ENDPOINTS.CLIENT.POST.LIKE.DELETE : API_ENDPOINTS.CLIENT.POST.LIKE.CREATE
+      const res = await fetchData(endpoint(Number(params.id)) as ApiEndpoint, {
+        headers: {
+          Authorization: `Bearer ${session.data.accessToken}`
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('좋아요 처리 중 오류가 발생했습니다.')
+      }
+
+      // 로컬 스토리지 업데이트
+      const likeKey = `like_${params.id}`
+      if (isLiked) {
+        localStorage.removeItem(likeKey)
+      } else {
+        localStorage.setItem(likeKey, 'true')
+      }
+
+      setIsLiked(!isLiked)
+      setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+    } catch (error) {
+      console.error('Failed to toggle like:', error)
+      toast({
+        variant: 'destructive',
+        description: '좋아요 처리 중 오류가 발생했습니다.'
+      })
+    } finally {
+      setIsLikeLoading(false)
     }
   }
 
@@ -210,7 +264,14 @@ export default function PostDetail() {
 
         {/* Post info */}
         <div className="mb-8 flex items-center gap-4 text-sm text-gray-500">
-          <span>좋아요 {post.likeCount}</span>
+          <button
+            onClick={handleLikeClick}
+            className="flex items-center gap-1 border-gray-200 transition-colors hover:text-red-500"
+            disabled={isLikeLoading}
+          >
+            {isLiked ? <Heart className="h-5 w-5 fill-current text-red-500" /> : <Heart className="h-5 w-5" />}
+            <span>{likeCount}</span>
+          </button>
           <span>댓글 {post.comments.length}</span>
         </div>
 

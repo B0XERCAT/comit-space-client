@@ -97,7 +97,10 @@ function PostCard({ post }: { post: Post }) {
 
           {/* Post info */}
           <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span>좋아요 {post.likeCount}</span>
+            <div className="flex items-center gap-1">
+              좋아요
+              <span>{post.likeCount}</span>
+            </div>
             <span>댓글 {post.comments.length}</span>
           </div>
         </div>
@@ -183,9 +186,7 @@ export default function PostBoard() {
 
       try {
         setIsPostsLoading(true)
-        // API 호출 시 소문자를 대문자로 변환
         const groupType = selectedType.toUpperCase() as 'STUDY' | 'EVENT'
-        console.log('Fetching posts for type:', groupType) // 디버깅용 로그
         const res = await fetchData(API_ENDPOINTS.CLIENT.POST.LIST(groupType))
 
         if (!res.ok) {
@@ -193,6 +194,7 @@ export default function PostBoard() {
         }
         const json: CustomResponse = await res.json()
         const posts: Post[] = json.data
+        // Filter posts by selected group
         setPosts(posts.filter((post) => post.groupId.toString() === selectedId))
       } catch (error) {
         console.error('Error fetching posts:', error)

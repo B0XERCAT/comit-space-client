@@ -1,6 +1,5 @@
 import Header from '@/components/admin/Header'
 import SideBar from '@/components/admin/Sidebar'
-import Footer from '@/components/common/Footer'
 import { Toaster } from '@/components/ui/toaster'
 
 export default function RootLayout({
@@ -9,23 +8,26 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const headerHeight = '5rem'
-  const footerHeight = '5rem'
 
   return (
-    <div className="h-screen">
-      <Header height={headerHeight} />
-      <div
-        className="flex"
-        style={{
-          paddingTop: headerHeight,
-          minHeight: '100%',
-          paddingBottom: footerHeight
-        }}
-      >
-        <SideBar className="w-1/5" />
-        <div className="w-11/12">{children}</div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - fixed at top */}
+      <div className="fixed left-0 right-0 top-0 z-40">
+        <Header height={headerHeight} />
       </div>
-      <Footer height={footerHeight} />
+
+      {/* Main layout with sidebar and content */}
+      <div className="flex min-h-screen">
+        {/* Sidebar component handles both the fixed sidebar and the spacer */}
+        <SideBar />
+
+        {/* Main content area - starts below header */}
+        <div className="flex-1">
+          <main className="px-8 py-6" style={{ paddingTop: `calc(${headerHeight} + 1.5rem)` }}>
+            {children}
+          </main>
+        </div>
+      </div>
       <Toaster />
     </div>
   )

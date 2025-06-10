@@ -207,7 +207,10 @@ export default function EventDetailPage({ params }: EventDetailProps) {
     <div className="flex w-full justify-center gap-8">
       <Card className="w-1/2">
         <CardHeader>
-          <CardTitle>{event.title}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{event.title}</CardTitle>
+            <Button onClick={() => router.push(`/myevent/${id}/edit`)}>행사 수정</Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">

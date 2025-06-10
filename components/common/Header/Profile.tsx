@@ -81,7 +81,7 @@ function Profile() {
           나의 스터디
         </MenuItem>
         <MenuItem icon={<MdOutlineEventNote size={iconSize} />} href={ROUTES.MYEVENT.url}>
-          행사 관리
+          나의 행사
         </MenuItem>
 
         {session.data.role === 'ROLE_ADMIN' && (

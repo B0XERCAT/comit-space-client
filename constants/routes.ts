@@ -68,7 +68,7 @@ export const ROUTES = {
     url: '/mystudy'
   },
   MYEVENT: {
-    name: '행사 관리',
+    name: '나의 행사',
     url: '/myevent'
   },
   PROFILE: {

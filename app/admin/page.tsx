@@ -41,8 +41,7 @@ const Admin = async () => {
 
   return (
     <div className="p-5">
-      <h1 className="mb-10 flex w-full items-center justify-start text-3xl font-extrabold">Dashboard</h1>
-
+      <p className="mb-3 flex w-full items-center justify-start py-7 text-3xl font-semibold">Dashboard</p>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card className="col-span-2 md:col-span-1">
           <CardHeader>

@@ -65,7 +65,7 @@ interface StudyEditProps {
   }
 }
 
-type StudyForm = Omit<Study, 'id' | 'mentor' | 'isRecruiting'>
+type StudyForm = Omit<Study, 'id' | 'mentor'>
 
 export default function StudyEditPage({ params }: StudyEditProps) {
   const session = useSession()
@@ -100,6 +100,7 @@ export default function StudyEditPage({ params }: StudyEditProps) {
   const [endTime, setEndTime] = useState<Date | undefined>(undefined)
   const [description, setDescription] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isRecruiting, setIsRecruiting] = useState(true)
 
   useEffect(() => {
     if (!session || session.error) return
@@ -132,6 +133,7 @@ export default function StudyEditPage({ params }: StudyEditProps) {
         setValue('description', studyData.description)
         setDescription(studyData.description)
         setImage(studyData.imageSrc)
+        setIsRecruiting(studyData.isRecruiting)
 
         // Set time pickers
         if (studyData.startTime) {
@@ -181,13 +183,22 @@ export default function StudyEditPage({ params }: StudyEditProps) {
         fileUrl = file.supabaseFileData.url
       }
 
+      const submitData = {
+        ...data,
+        imageSrc: fileUrl,
+        description,
+        isRecruiting,
+        semester: 'Spring',
+        year: 2025
+      }
+
       const res = await fetchData(API_ENDPOINTS.CLIENT.STUDY.UPDATE(id), {
-        body: JSON.stringify({ ...data, imageSrc: fileUrl, description }),
+        method: 'PUT',
+        body: JSON.stringify(submitData),
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.data.accessToken}`
-        },
-        credentials: 'include'
+        }
       })
 
       if (!res.ok) {
@@ -400,8 +411,28 @@ export default function StudyEditPage({ params }: StudyEditProps) {
             />
             {errors.level && <p className="text-sm text-red-500">{errors.level.message}</p>}
           </div>
-        </div>
 
+          {/* 모집 상태 */}
+          <div className="space-y-2">
+            <Label>모집 상태</Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={isRecruiting ? 'default' : 'outline'}
+                onClick={() => setIsRecruiting(true)}
+              >
+                모집 중
+              </Button>
+              <Button
+                type="button"
+                variant={!isRecruiting ? 'default' : 'outline'}
+                onClick={() => setIsRecruiting(false)}
+              >
+                모집 마감
+              </Button>
+            </div>
+          </div>
+        </div>
         {/* 스택 */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">

@@ -61,7 +61,7 @@ export const ExampleStudyList = () => {
 
   return (
     <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-12 xl:mb-32 xl:grid-cols-4">
-      {studyList.map((study) => (
+      {studyList.slice(0, 4).map((study) => (
         <div className="col-span-2 flex justify-center sm:col-span-1" key={study.id}>
           <Link key={study.id} href="study/">
             <StudyCard

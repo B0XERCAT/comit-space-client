@@ -10,7 +10,6 @@ import { Motion } from '@/components/common/MotionWrapper'
 import ExampleStudyList from '@/components/main/ExampleStudyList'
 import { MainCarousel } from '@/components/main/MainCarousel'
 import { Button } from '@/components/ui/button'
-import { ROUTES } from '@/constants/routes'
 import { fadeIn } from '@/lib/animations'
 import mainPicture from '@/public/mainPicture.svg'
 
@@ -85,14 +84,14 @@ const Home = () => {
                     {renderAnimatedText(['C', 'O', 'M', 'I', 'T'])}
                   </p>
                   {/* Todo: 동아리 신청 기간을 백엔드로 부터 받아, disabled 기간을 설정 */}
-                  <Motion animation={fadeIn()}>
+                  {/* <Motion animation={fadeIn()}>
                     <Button
                       disabled
                       className="h-12 w-40 rounded-2xl border-none text-xl font-semibold lg:h-[60px] lg:w-[190px] lg:text-[24px]"
                     >
                       <Link href={ROUTES.SIGNUP.url}>신규 지원</Link>
                     </Button>
-                  </Motion>
+                  </Motion> */}
                 </div>
               </div>
             </div>
